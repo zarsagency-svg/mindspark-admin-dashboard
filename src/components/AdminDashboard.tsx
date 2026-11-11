@@ -716,7 +716,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ============================================================ */}
         {activeSection === "broadcasts" && (
           <div className="space-y-6 animate-pop-in">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 stagger">
               {/* Left 7 Cols: Announcement Composer */}
               <form
                 onSubmit={handlePublishAnnouncement}
@@ -824,13 +824,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="submit"
                   disabled={isPublishingBc}
-                  className="w-full py-3.5 px-5 rounded-2xl font-display font-bold text-sm text-ink flex items-center justify-center gap-2 transition-ui hover:-translate-y-0.5 cursor-pointer"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--ultra-600) 0%, var(--ultra-400) 100%)",
-                    border: "1px solid color-mix(in srgb, var(--ultra-50) 65%, transparent)",
-                    boxShadow: "0 10px 25px color-mix(in srgb, var(--ultra-600) 55%, transparent)",
-                  }}
+                  className="btn btn-primary w-full py-3.5 px-5 text-sm"
                 >
                   <Send className="w-4 h-4" />
                   <span>
@@ -1027,7 +1021,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ============================================================ */}
         {activeSection === "platforms" && (
           <div className="space-y-6 animate-pop-in">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 stagger">
               {/* Left 7 Cols: Add / Edit Platform Form */}
               <form
                 onSubmit={handleSavePlatform}
@@ -1265,13 +1259,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="submit"
                   disabled={isSavingPlatform}
-                  className="w-full py-3.5 px-5 rounded-2xl font-display font-bold text-sm text-ink flex items-center justify-center gap-2 transition-ui hover:-translate-y-0.5 cursor-pointer"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--ultra-600) 0%, var(--ultra-400) 100%)",
-                    border: "1px solid color-mix(in srgb, var(--ultra-50) 65%, transparent)",
-                    boxShadow: "0 10px 25px color-mix(in srgb, var(--ultra-600) 55%, transparent)",
-                  }}
+                  className="btn btn-primary w-full py-3.5 px-5 text-sm"
                 >
                   <FolderPlus className="w-4 h-4" />
                   <span>
@@ -1376,7 +1364,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ============================================================ */}
         {activeSection === "appearance" && (
           <div className="space-y-6 animate-pop-in">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 stagger">
               {/* Colour Palette & Custom Hex Picker */}
               <div
                 className="lg:col-span-7 rounded-[26px] p-5 sm:p-6 space-y-5"
