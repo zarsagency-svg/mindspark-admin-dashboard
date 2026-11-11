@@ -1,13 +1,7 @@
-# Security status — do not deploy
+# Dashboard status
 
-This repository is undergoing security remediation and is NOT production-ready.
+The original demo's fake Google login, default passcode, local PostgreSQL APIs and seed code have been removed from the live routes. The dashboard uses Supabase Google OAuth and database functions with admin-only checks. The existing notification and visitor-message tables remain in place. No fake analytics are displayed.
 
-The original passcode login endpoint is disabled. The admin sign-in UI now starts Supabase Google OAuth, but has not been tested end to end. The announcements, messages, platforms and settings API handlers now require an admin bearer token validated against Supabase Auth and a matching verified Google identity. These checks fail closed if Supabase cannot be reached.
+The migration is already applied to the connected Supabase project. Unauthenticated access to the two dashboard functions was tested and denied. Full Google OAuth login, non-admin authorization and successful admin operations require a real Google sign-in and remain to be tested. Add the eventual deployment URL to the Supabase redirect allowlist before testing. Do not claim the application is production-verified before completing those tests.
 
-Still required before deployment:
-- Replace the separate student-facing simulated Google login with real verified authentication. Verify the admin Google OAuth flow and configure its redirect URL once the deployment hostname is known.
-- Connect a suitable database without exposing its credentials, and reconcile this app's schema with existing Supabase data; the archive's local database connection was removed.
-- Audit student-facing APIs and build authorization for users' own messages, rather than allowing admin-only access to all operations.
-- Test valid admin, non-admin, anonymous, expired and forged credentials, data isolation, and the complete Google sign-in redirect.
-
-The current API authorization is an intermediate safeguard, not a finished security review. The site will not work as intended until these steps are complete. Do not deploy against real data in this state.
+This initial version includes read-only visitor messages and posting text announcements. Private replies, analytics, image uploads, message deletion and visitor Google login are not yet implemented.
