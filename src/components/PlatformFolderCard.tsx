@@ -23,7 +23,7 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
         className="pointer-events-none absolute -bottom-3 inset-x-5 h-10 rounded-full opacity-70 transition-ui duration-200 group-hover:opacity-100 group-hover:scale-105"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(46,93,230,0.65) 0%, rgba(15,34,112,0.45) 55%, rgba(7,16,57,0) 80%)",
+            "radial-gradient(ellipse at center, color-mix(in srgb, var(--ultra-600) 65%, transparent) 0%, color-mix(in srgb, var(--ultra-900) 45%, transparent) 55%, color-mix(in srgb, var(--ultra-950) 0%, transparent) 80%)",
         }}
       />
 
@@ -43,10 +43,10 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#6E92F2" />
+            <stop offset="0%" stopColor="var(--ultra-400)" />
             <stop offset="28%" stopColor={item.accentShade || "#2E5DE6"} />
-            <stop offset="72%" stopColor="#1A3BB0" />
-            <stop offset="100%" stopColor="#0F2270" />
+            <stop offset="72%" stopColor="var(--ultra-800)" />
+            <stop offset="100%" stopColor="var(--ultra-900)" />
           </linearGradient>
           <linearGradient
             id={`folderRim-${item.id}`}
@@ -55,9 +55,9 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
             x2="100%"
             y2="40%"
           >
-            <stop offset="0%" stopColor="#E6EDFD" stopOpacity="0.8" />
-            <stop offset="50%" stopColor="#AFC5F8" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#6E92F2" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="var(--ultra-50)" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="var(--ultra-200)" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="var(--ultra-400)" stopOpacity="0.2" />
           </linearGradient>
           <linearGradient
             id={`folderInnerShadow-${item.id}`}
@@ -66,8 +66,8 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
             x2="50%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#071039" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#071039" stopOpacity="0.58" />
+            <stop offset="0%" stopColor="var(--ultra-950)" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="var(--ultra-950)" stopOpacity="0.58" />
           </linearGradient>
         </defs>
 
@@ -127,10 +127,10 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
           className="w-full h-[58%] rounded-[16px] transition-transform duration-200 ease-out group-hover:-translate-y-1"
           style={{
             background:
-              "linear-gradient(180deg, #E6EDFD 0%, #AFC5F8 48%, rgba(110,146,242,0.35) 100%)",
+              "linear-gradient(180deg, var(--ultra-50) 0%, var(--ultra-200) 48%, color-mix(in srgb, var(--ultra-400) 35%, transparent) 100%)",
             boxShadow:
-              "0 -2px 10px rgba(7,16,57,0.28), inset 0 2px 2px rgba(255,255,255,0.9)",
-            border: "1px solid rgba(230,237,253,0.85)",
+              "0 -2px 10px color-mix(in srgb, var(--ultra-950) 28%, transparent), inset 0 2px 2px rgba(255,255,255,0.9)",
+            border: "1px solid color-mix(in srgb, var(--ultra-50) 85%, transparent)",
           }}
         />
 
@@ -139,12 +139,12 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
           style={{
             transform: `rotate(${item.tiltAngle}deg)`,
             background:
-              "linear-gradient(145deg, #071039 0%, #0F2270 65%, #1A3BB0 100%)",
-            border: "2px solid rgba(230,237,253,0.78)",
+              "linear-gradient(145deg, var(--ultra-950) 0%, var(--ultra-900) 65%, var(--ultra-800) 100%)",
+            border: "2px solid color-mix(in srgb, var(--ultra-50) 78%, transparent)",
             boxShadow: "var(--folder-logo-shadow)",
           }}
         >
-          <div className="relative w-full h-full rounded-[14px] overflow-hidden bg-[#071039] flex items-center justify-center">
+          <div className="relative w-full h-full rounded-[14px] overflow-hidden bg-abyss flex items-center justify-center">
             <img
               src={item.imgSrc}
               alt={item.imgAlt}
@@ -162,7 +162,7 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
               className="pointer-events-none absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(135deg, rgba(230,237,253,0.32) 0%, rgba(230,237,253,0) 52%)",
+                  "linear-gradient(135deg, color-mix(in srgb, var(--ultra-50) 32%, transparent) 0%, color-mix(in srgb, var(--ultra-50) 0%, transparent) 52%)",
               }}
             />
           </div>
@@ -176,22 +176,22 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
           background: "var(--folder-pocket-background)",
           backdropFilter: "var(--glass-folder-filter)",
           WebkitBackdropFilter: "var(--glass-folder-filter)",
-          borderTop: "1.5px solid rgba(230,237,253,0.68)",
-          borderLeft: "1px solid rgba(230,237,253,0.42)",
-          borderRight: "1px solid rgba(175,197,248,0.32)",
-          borderBottom: "1.5px solid rgba(15,34,112,0.75)",
+          borderTop: "1.5px solid color-mix(in srgb, var(--ultra-50) 68%, transparent)",
+          borderLeft: "1px solid color-mix(in srgb, var(--ultra-50) 42%, transparent)",
+          borderRight: "1px solid color-mix(in srgb, var(--ultra-200) 32%, transparent)",
+          borderBottom: "1.5px solid color-mix(in srgb, var(--ultra-900) 75%, transparent)",
           boxShadow:
-            "0 -6px 20px rgba(7,16,57,0.32), inset 0 2px 3px rgba(230,237,253,0.48), inset 0 -6px 14px rgba(15,34,112,0.55)",
+            "0 -6px 20px color-mix(in srgb, var(--ultra-950) 32%, transparent), inset 0 2px 3px color-mix(in srgb, var(--ultra-50) 48%, transparent), inset 0 -6px 14px color-mix(in srgb, var(--ultra-900) 55%, transparent)",
         }}
       >
         <div
           className="pointer-events-none absolute inset-[9px] sm:inset-[11px] rounded-[16px]"
           style={{
             background:
-              "linear-gradient(165deg, rgba(230,237,253,0.16) 0%, rgba(110,146,242,0.06) 55%, rgba(15,34,112,0.22) 100%)",
+              "linear-gradient(165deg, color-mix(in srgb, var(--ultra-50) 16%, transparent) 0%, color-mix(in srgb, var(--ultra-400) 6%, transparent) 55%, color-mix(in srgb, var(--ultra-900) 22%, transparent) 100%)",
             boxShadow:
-              "0 8px 16px rgba(7,16,57,0.28), inset 0 1.5px 2px rgba(230,237,253,0.38), inset 0 -2px 4px rgba(15,34,112,0.32)",
-            border: "1px solid rgba(230,237,253,0.22)",
+              "0 8px 16px color-mix(in srgb, var(--ultra-950) 28%, transparent), inset 0 1.5px 2px color-mix(in srgb, var(--ultra-50) 38%, transparent), inset 0 -2px 4px color-mix(in srgb, var(--ultra-900) 32%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--ultra-50) 22%, transparent)",
           }}
         />
 
@@ -199,31 +199,31 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
           className="desktop-sheen pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-out"
           style={{
             background:
-              "linear-gradient(105deg, transparent 20%, rgba(230,237,253,0.26) 50%, transparent 80%)",
+              "linear-gradient(105deg, transparent 20%, color-mix(in srgb, var(--ultra-50) 26%, transparent) 50%, transparent 80%)",
           }}
         />
 
         <div className="relative z-10 flex items-start justify-between gap-2 px-1.5 pt-0.5">
           <div className="text-left min-w-0">
-            <h2 className="font-display font-bold text-[15px] sm:text-[17px] leading-tight tracking-tight text-[#E6EDFD] truncate group-hover:text-white transition-colors">
+            <h2 className="font-display font-bold text-[15px] sm:text-[17px] leading-tight tracking-tight text-ink truncate group-hover:text-white transition-colors">
               {item.name}
             </h2>
-            <p className="text-[11px] sm:text-[12px] font-medium text-[#E6EDFD]/80 truncate mt-0.5">
+            <p className="text-[11px] sm:text-[12px] font-medium text-ink/80 truncate mt-0.5">
               {item.subtitle}
             </p>
           </div>
 
           <div
-            className="shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-ui duration-200 group-hover:scale-110 group-hover:bg-[#E6EDFD]/25"
+            className="shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-ui duration-200 group-hover:scale-110 group-hover:bg-ink/25"
             style={{
-              border: "1.25px solid rgba(230,237,253,0.75)",
-              background: "rgba(230,237,253,0.12)",
-              boxShadow: "0 2px 8px rgba(7,16,57,0.25)",
+              border: "1.25px solid color-mix(in srgb, var(--ultra-50) 75%, transparent)",
+              background: "color-mix(in srgb, var(--ultra-50) 12%, transparent)",
+              boxShadow: "0 2px 8px color-mix(in srgb, var(--ultra-950) 25%, transparent)",
             }}
           >
             <svg
               viewBox="0 0 16 16"
-              className="w-3.5 h-3.5 text-[#E6EDFD]"
+              className="w-3.5 h-3.5 text-ink"
               fill="currentColor"
             >
               <circle cx="8" cy="3.5" r="1.2" />
@@ -234,14 +234,14 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
         </div>
 
         <div className="relative z-10 flex items-center justify-between px-1.5 pb-0.5">
-          <span className="text-[10px] sm:text-[11px] font-medium tracking-wide text-[#E6EDFD]/90 truncate">
+          <span className="text-[10px] sm:text-[11px] font-medium tracking-wide text-ink/90 truncate">
             {item.metaText}
           </span>
           <span
-            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#E6EDFD] opacity-90 group-hover:opacity-100 transition-opacity"
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ink opacity-90 group-hover:opacity-100 transition-opacity"
             style={{
-              background: "rgba(7,16,57,0.38)",
-              border: "1px solid rgba(230,237,253,0.3)",
+              background: "color-mix(in srgb, var(--ultra-950) 38%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--ultra-50) 30%, transparent)",
             }}
           >
             <span>Open</span>
@@ -271,7 +271,7 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
         title={item.title}
         aria-haspopup="dialog"
         onClick={onOpenModal}
-        className="w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6E92F2] rounded-[24px] animate-pop-in"
+        className="w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-glow rounded-[24px] animate-pop-in"
       >
         {FolderVisual}
       </button>
@@ -285,7 +285,7 @@ export const PlatformFolderCard = React.memo(function PlatformFolderCard({
         target="_blank"
         rel="noopener noreferrer"
         title={item.title}
-        className="block w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6E92F2] rounded-[24px] animate-pop-in"
+        className="block w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-glow rounded-[24px] animate-pop-in"
       >
         {FolderVisual}
       </a>

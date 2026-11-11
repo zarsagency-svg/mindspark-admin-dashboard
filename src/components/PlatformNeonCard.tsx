@@ -22,9 +22,9 @@ export const PlatformNeonCard: React.FC<PlatformNeonCardProps> = ({
       className="group relative w-full aspect-[3/4] select-none rounded-[22px] overflow-hidden transition-all duration-500 ease-out hover:-translate-y-2 flex flex-col items-center px-3.5 py-5"
       style={{
         background:
-          "linear-gradient(165deg, #0F2270 0%, #0A1A5E 45%, #071039 100%)",
+          "linear-gradient(165deg, var(--ultra-900) 0%, color-mix(in oklab, var(--ultra-900) 55%, var(--ultra-950)) 45%, var(--ultra-950) 100%)",
         border: `1.5px solid ${accent}`,
-        boxShadow: `0 0 14px ${accent}55, 0 0 34px ${accent}26, inset 0 0 22px ${accent}1f, 0 18px 30px -12px rgba(7,16,57,0.85)`,
+        boxShadow: `0 0 14px ${accent}55, 0 0 34px ${accent}26, inset 0 0 22px ${accent}1f, 0 18px 30px -12px color-mix(in srgb, var(--ultra-950) 85%, transparent)`,
       }}
     >
       <div
@@ -39,7 +39,7 @@ export const PlatformNeonCard: React.FC<PlatformNeonCardProps> = ({
         className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out z-20"
         style={{
           background:
-            "linear-gradient(105deg, transparent 20%, rgba(230,237,253,0.18) 50%, transparent 80%)",
+            "linear-gradient(105deg, transparent 20%, color-mix(in srgb, var(--ultra-50) 18%, transparent) 50%, transparent 80%)",
         }}
       />
 
@@ -47,11 +47,11 @@ export const PlatformNeonCard: React.FC<PlatformNeonCardProps> = ({
         <div
           className="h-full max-h-[130px] aspect-square rounded-[20px] p-[3px] transition-all duration-500 ease-out group-hover:scale-110 group-hover:-rotate-2"
           style={{
-            background: `linear-gradient(150deg, ${accent}, #071039 70%)`,
-            boxShadow: `0 0 20px ${accent}88, 0 0 44px ${accent}44, 0 10px 22px -6px rgba(7,16,57,0.9)`,
+            background: `linear-gradient(150deg, ${accent}, var(--ultra-950) 70%)`,
+            boxShadow: `0 0 20px ${accent}88, 0 0 44px ${accent}44, 0 10px 22px -6px color-mix(in srgb, var(--ultra-950) 90%, transparent)`,
           }}
         >
-          <div className="relative w-full h-full rounded-[17px] overflow-hidden bg-[#071039] flex items-center justify-center">
+          <div className="relative w-full h-full rounded-[17px] overflow-hidden bg-abyss flex items-center justify-center">
             <img
               src={item.imgSrc}
               alt={item.imgAlt}
@@ -67,14 +67,14 @@ export const PlatformNeonCard: React.FC<PlatformNeonCardProps> = ({
               className="pointer-events-none absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(135deg, rgba(230,237,253,0.28) 0%, rgba(230,237,253,0) 52%)",
+                  "linear-gradient(135deg, color-mix(in srgb, var(--ultra-50) 28%, transparent) 0%, color-mix(in srgb, var(--ultra-50) 0%, transparent) 52%)",
               }}
             />
           </div>
         </div>
       </div>
 
-      <h2 className="shrink-0 font-display font-bold text-base sm:text-lg leading-tight tracking-tight text-[#E6EDFD] text-center truncate max-w-full group-hover:text-white transition-colors pt-3">
+      <h2 className="shrink-0 font-display font-bold text-base sm:text-lg leading-tight tracking-tight text-ink text-center truncate max-w-full group-hover:text-white transition-colors pt-3">
         {item.name}
       </h2>
 
@@ -94,7 +94,7 @@ export const PlatformNeonCard: React.FC<PlatformNeonCardProps> = ({
         title={item.title}
         aria-haspopup="dialog"
         onClick={onOpenModal}
-        className="w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6E92F2] rounded-[22px] animate-pop-in"
+        className="w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-glow rounded-[22px] animate-pop-in"
       >
         {CardVisual}
       </button>
@@ -108,7 +108,7 @@ export const PlatformNeonCard: React.FC<PlatformNeonCardProps> = ({
         target="_blank"
         rel="noopener noreferrer"
         title={item.title}
-        className="block w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6E92F2] rounded-[22px] animate-pop-in"
+        className="block w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-glow rounded-[22px] animate-pop-in"
       >
         {CardVisual}
       </a>

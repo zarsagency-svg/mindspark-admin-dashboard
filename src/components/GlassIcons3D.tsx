@@ -19,15 +19,15 @@ export const GlassEnvelopeNotificationIcon: React.FC<IconProps> = ({
         className="absolute inset-0 rounded-2xl opacity-75 transition-opacity group-hover:opacity-100"
         style={{
           background:
-            "radial-gradient(circle, rgba(110,146,242,0.55) 0%, rgba(46,93,230,0) 75%)",
+            "radial-gradient(circle, color-mix(in srgb, var(--ultra-400) 55%, transparent) 0%, color-mix(in srgb, var(--ultra-600) 0%, transparent) 75%)",
         }}
       />
 
       <div
         className="absolute bottom-1 w-[82%] h-[58%] rounded-xl"
         style={{
-          background: "linear-gradient(145deg, #1A3BB0 0%, #0F2270 100%)",
-          boxShadow: "0 4px 12px rgba(7,16,57,0.6)",
+          background: "linear-gradient(145deg, var(--ultra-800) 0%, var(--ultra-900) 100%)",
+          boxShadow: "0 4px 12px color-mix(in srgb, var(--ultra-950) 60%, transparent)",
         }}
       />
 
@@ -37,32 +37,32 @@ export const GlassEnvelopeNotificationIcon: React.FC<IconProps> = ({
         }`}
         style={{
           background:
-            "linear-gradient(135deg, #6E92F2 0%, #2E5DE6 55%, #1A3BB0 100%)",
+            "linear-gradient(135deg, var(--ultra-400) 0%, var(--ultra-600) 55%, var(--ultra-800) 100%)",
           boxShadow:
-            "0 4px 10px rgba(46,93,230,0.5), inset 0 1px 1px rgba(230,237,253,0.65)",
-          border: "1px solid rgba(230,237,253,0.45)",
+            "0 4px 10px color-mix(in srgb, var(--ultra-600) 50%, transparent), inset 0 1px 1px color-mix(in srgb, var(--ultra-50) 65%, transparent)",
+          border: "1px solid color-mix(in srgb, var(--ultra-50) 45%, transparent)",
         }}
       >
-        <span className="h-[2.5px] w-full rounded-full bg-[#E6EDFD]" />
-        <span className="h-[2.5px] w-[85%] rounded-full bg-[#E6EDFD]/90" />
-        <span className="h-[2.5px] w-[60%] rounded-full bg-[#AFC5F8]/85" />
+        <span className="h-[2.5px] w-full rounded-full bg-ink" />
+        <span className="h-[2.5px] w-[85%] rounded-full bg-ink/90" />
+        <span className="h-[2.5px] w-[60%] rounded-full bg-mist/85" />
       </div>
 
       <div
         className="absolute bottom-0.5 w-[86%] h-[54%] rounded-xl overflow-hidden"
         style={{
           background:
-            "linear-gradient(160deg, rgba(230,237,253,0.36) 0%, rgba(175,197,248,0.22) 50%, rgba(110,146,242,0.28) 100%)",
-          border: "1px solid rgba(230,237,253,0.5)",
+            "linear-gradient(160deg, color-mix(in srgb, var(--ultra-50) 36%, transparent) 0%, color-mix(in srgb, var(--ultra-200) 22%, transparent) 50%, color-mix(in srgb, var(--ultra-400) 28%, transparent) 100%)",
+          border: "1px solid color-mix(in srgb, var(--ultra-50) 50%, transparent)",
           boxShadow:
-            "0 6px 14px rgba(7,16,57,0.45), inset 0 2px 3px rgba(230,237,253,0.45), inset 0 -2px 4px rgba(15,34,112,0.35)",
+            "0 6px 14px color-mix(in srgb, var(--ultra-950) 45%, transparent), inset 0 2px 3px color-mix(in srgb, var(--ultra-50) 45%, transparent), inset 0 -2px 4px color-mix(in srgb, var(--ultra-900) 35%, transparent)",
         }}
       >
         <div
           className="w-full h-2.5 opacity-60"
           style={{
             background:
-              "linear-gradient(180deg, rgba(230,237,253,0.45) 0%, rgba(230,237,253,0) 100%)",
+              "linear-gradient(180deg, color-mix(in srgb, var(--ultra-50) 45%, transparent) 0%, color-mix(in srgb, var(--ultra-50) 0%, transparent) 100%)",
           }}
         />
       </div>
@@ -81,9 +81,9 @@ export const GlassChatBubbleIcon: React.FC<IconProps> = ({
         className="absolute left-1 top-1.5 w-[66%] h-[58%] rounded-2xl rounded-bl-sm transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5"
         style={{
           background:
-            "linear-gradient(135deg, #6E92F2 0%, #2E5DE6 65%, #1A3BB0 100%)",
-          boxShadow: "0 6px 14px rgba(46,93,230,0.55)",
-          border: "1px solid rgba(175,197,248,0.45)",
+            "linear-gradient(135deg, var(--ultra-400) 0%, var(--ultra-600) 65%, var(--ultra-800) 100%)",
+          boxShadow: "0 6px 14px color-mix(in srgb, var(--ultra-600) 55%, transparent)",
+          border: "1px solid color-mix(in srgb, var(--ultra-200) 45%, transparent)",
         }}
       />
 
@@ -91,15 +91,15 @@ export const GlassChatBubbleIcon: React.FC<IconProps> = ({
         className="absolute right-1 bottom-1.5 w-[72%] h-[62%] rounded-2xl rounded-br-sm flex items-center justify-center gap-1.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:translate-y-0.5"
         style={{
           background:
-            "linear-gradient(135deg, rgba(230,237,253,0.38) 0%, rgba(175,197,248,0.22) 55%, rgba(46,93,230,0.26) 100%)",
-          border: "1px solid rgba(230,237,253,0.55)",
+            "linear-gradient(135deg, color-mix(in srgb, var(--ultra-50) 38%, transparent) 0%, color-mix(in srgb, var(--ultra-200) 22%, transparent) 55%, color-mix(in srgb, var(--ultra-600) 26%, transparent) 100%)",
+          border: "1px solid color-mix(in srgb, var(--ultra-50) 55%, transparent)",
           boxShadow:
-            "0 8px 18px rgba(7,16,57,0.45), inset 0 1.5px 2px rgba(230,237,253,0.55)",
+            "0 8px 18px color-mix(in srgb, var(--ultra-950) 45%, transparent), inset 0 1.5px 2px color-mix(in srgb, var(--ultra-50) 55%, transparent)",
         }}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-[#E6EDFD] shadow-[0_0_6px_#E6EDFD]" />
-        <span className="w-1.5 h-1.5 rounded-full bg-[#E6EDFD] shadow-[0_0_6px_#E6EDFD]" />
-        <span className="w-1.5 h-1.5 rounded-full bg-[#E6EDFD] shadow-[0_0_6px_#E6EDFD]" />
+        <span className="w-1.5 h-1.5 rounded-full bg-ink shadow-[0_0_6px_var(--ultra-50)]" />
+        <span className="w-1.5 h-1.5 rounded-full bg-ink shadow-[0_0_6px_var(--ultra-50)]" />
+        <span className="w-1.5 h-1.5 rounded-full bg-ink shadow-[0_0_6px_var(--ultra-50)]" />
       </div>
     </div>
   );
@@ -113,24 +113,24 @@ export const GlassSearchIcon: React.FC<IconProps> = ({
       className={`relative select-none flex items-center justify-center ${className}`}
     >
       <div
-        className="absolute right-1 top-1.5 w-5 h-5 rounded-full border-[3px] border-[#2E5DE6] shadow-[0_0_12px_rgba(46,93,230,0.65)]"
-        style={{ background: "rgba(46,93,230,0.18)" }}
+        className="absolute right-1 top-1.5 w-5 h-5 rounded-full border-[3px] border-accent shadow-[0_0_12px_color-mix(in srgb, var(--ultra-600) 65%, transparent)]"
+        style={{ background: "color-mix(in srgb, var(--ultra-600) 18%, transparent)" }}
       >
-        <span className="absolute -bottom-2 -right-1.5 w-2.5 h-[3.5px] rounded-full bg-[#2E5DE6] rotate-45" />
+        <span className="absolute -bottom-2 -right-1.5 w-2.5 h-[3.5px] rounded-full bg-accent rotate-45" />
       </div>
 
       <div
         className="absolute left-0.5 bottom-2 w-6 h-3.5 rounded-md flex items-center justify-center gap-0.5 px-1"
         style={{
           background:
-            "linear-gradient(135deg, rgba(230,237,253,0.45) 0%, rgba(175,197,248,0.22) 100%)",
-          border: "1px solid rgba(230,237,253,0.55)",
-          boxShadow: "0 4px 10px rgba(7,16,57,0.4)",
+            "linear-gradient(135deg, color-mix(in srgb, var(--ultra-50) 45%, transparent) 0%, color-mix(in srgb, var(--ultra-200) 22%, transparent) 100%)",
+          border: "1px solid color-mix(in srgb, var(--ultra-50) 55%, transparent)",
+          boxShadow: "0 4px 10px color-mix(in srgb, var(--ultra-950) 40%, transparent)",
         }}
       >
-        <span className="w-1 h-1 rounded-full bg-[#E6EDFD]" />
-        <span className="w-1 h-1 rounded-full bg-[#E6EDFD]/85" />
-        <span className="w-1 h-1 rounded-full bg-[#E6EDFD]/70" />
+        <span className="w-1 h-1 rounded-full bg-ink" />
+        <span className="w-1 h-1 rounded-full bg-ink/85" />
+        <span className="w-1 h-1 rounded-full bg-ink/70" />
       </div>
     </div>
   );
@@ -146,8 +146,8 @@ export const GlassPlayIcon: React.FC<IconProps> = ({
       <svg viewBox="0 0 36 36" className="absolute left-0.5 w-7 h-7">
         <defs>
           <linearGradient id="playBackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#6E92F2" />
-            <stop offset="100%" stopColor="#1A3BB0" />
+            <stop offset="0%" stopColor="var(--ultra-400)" />
+            <stop offset="100%" stopColor="var(--ultra-800)" />
           </linearGradient>
         </defs>
         <path
@@ -160,10 +160,10 @@ export const GlassPlayIcon: React.FC<IconProps> = ({
         className="relative translate-x-1.5 w-6 h-6 rounded-lg flex items-center justify-center"
         style={{
           background:
-            "linear-gradient(135deg, rgba(230,237,253,0.44) 0%, rgba(175,197,248,0.22) 100%)",
-          border: "1px solid rgba(230,237,253,0.55)",
+            "linear-gradient(135deg, color-mix(in srgb, var(--ultra-50) 44%, transparent) 0%, color-mix(in srgb, var(--ultra-200) 22%, transparent) 100%)",
+          border: "1px solid color-mix(in srgb, var(--ultra-50) 55%, transparent)",
           boxShadow:
-            "0 6px 14px rgba(7,16,57,0.4), inset 0 1px 2px rgba(230,237,253,0.55)",
+            "0 6px 14px color-mix(in srgb, var(--ultra-950) 40%, transparent), inset 0 1px 2px color-mix(in srgb, var(--ultra-50) 55%, transparent)",
           clipPath: "polygon(18% 10%, 92% 50%, 18% 90%)",
         }}
       />
@@ -181,24 +181,24 @@ export const GlassDocsIcon: React.FC<IconProps> = ({
       <div
         className="absolute right-1 top-1 w-6 h-7 rounded-lg"
         style={{
-          background: "linear-gradient(145deg, #6E92F2 0%, #2E5DE6 100%)",
-          boxShadow: "0 4px 12px rgba(46,93,230,0.55)",
+          background: "linear-gradient(145deg, var(--ultra-400) 0%, var(--ultra-600) 100%)",
+          boxShadow: "0 4px 12px color-mix(in srgb, var(--ultra-600) 55%, transparent)",
         }}
       />
       <div
         className="absolute left-1 bottom-1 w-6 h-7 rounded-lg flex flex-col justify-center gap-1 px-1.5"
         style={{
           background:
-            "linear-gradient(145deg, rgba(230,237,253,0.42) 0%, rgba(175,197,248,0.22) 100%)",
-          border: "1px solid rgba(230,237,253,0.55)",
+            "linear-gradient(145deg, color-mix(in srgb, var(--ultra-50) 42%, transparent) 0%, color-mix(in srgb, var(--ultra-200) 22%, transparent) 100%)",
+          border: "1px solid color-mix(in srgb, var(--ultra-50) 55%, transparent)",
           boxShadow:
-            "0 6px 14px rgba(7,16,57,0.4), inset 0 1px 1px rgba(230,237,253,0.55)",
+            "0 6px 14px color-mix(in srgb, var(--ultra-950) 40%, transparent), inset 0 1px 1px color-mix(in srgb, var(--ultra-50) 55%, transparent)",
         }}
       >
-        <span className="h-[2px] w-full rounded-full bg-[#E6EDFD]" />
-        <span className="h-[2px] w-full rounded-full bg-[#E6EDFD]/90" />
-        <span className="h-[2px] w-full rounded-full bg-[#E6EDFD]/80" />
-        <span className="h-[2px] w-[60%] rounded-full bg-[#AFC5F8]" />
+        <span className="h-[2px] w-full rounded-full bg-ink" />
+        <span className="h-[2px] w-full rounded-full bg-ink/90" />
+        <span className="h-[2px] w-full rounded-full bg-ink/80" />
+        <span className="h-[2px] w-[60%] rounded-full bg-mist" />
       </div>
     </div>
   );
@@ -214,8 +214,8 @@ export const GlassShieldIcon: React.FC<IconProps> = ({
       <svg viewBox="0 0 36 36" className="w-7 h-7 translate-x-1">
         <defs>
           <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#6E92F2" />
-            <stop offset="100%" stopColor="#1A3BB0" />
+            <stop offset="0%" stopColor="var(--ultra-400)" />
+            <stop offset="100%" stopColor="var(--ultra-800)" />
           </linearGradient>
         </defs>
         <path
@@ -227,12 +227,12 @@ export const GlassShieldIcon: React.FC<IconProps> = ({
         className="absolute left-0.5 bottom-1.5 w-5 h-5 rounded-full flex items-center justify-center"
         style={{
           background:
-            "linear-gradient(135deg, rgba(230,237,253,0.48) 0%, rgba(175,197,248,0.25) 100%)",
-          border: "1px solid rgba(230,237,253,0.65)",
-          boxShadow: "0 4px 10px rgba(7,16,57,0.45)",
+            "linear-gradient(135deg, color-mix(in srgb, var(--ultra-50) 48%, transparent) 0%, color-mix(in srgb, var(--ultra-200) 25%, transparent) 100%)",
+          border: "1px solid color-mix(in srgb, var(--ultra-50) 65%, transparent)",
+          boxShadow: "0 4px 10px color-mix(in srgb, var(--ultra-950) 45%, transparent)",
         }}
       >
-        <svg viewBox="0 0 16 16" className="w-3 h-3 text-[#E6EDFD]">
+        <svg viewBox="0 0 16 16" className="w-3 h-3 text-ink">
           <path
             d="M3.5 8.5 L6.5 11.5 L12.5 5"
             fill="none"
@@ -257,7 +257,7 @@ export const GlassMedalIcon: React.FC<IconProps> = ({
       <div
         className="absolute bottom-0.5 w-4 h-4 rounded-sm"
         style={{
-          background: "linear-gradient(180deg, #2E5DE6 0%, #6E92F2 100%)",
+          background: "linear-gradient(180deg, var(--ultra-600) 0%, var(--ultra-400) 100%)",
           clipPath: "polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%)",
         }}
       />
@@ -265,15 +265,15 @@ export const GlassMedalIcon: React.FC<IconProps> = ({
         className="relative -translate-y-1 w-6 h-6 rounded-full flex items-center justify-center"
         style={{
           background:
-            "linear-gradient(135deg, rgba(230,237,253,0.46) 0%, rgba(110,146,242,0.28) 100%)",
-          border: "1px solid rgba(230,237,253,0.6)",
+            "linear-gradient(135deg, color-mix(in srgb, var(--ultra-50) 46%, transparent) 0%, color-mix(in srgb, var(--ultra-400) 28%, transparent) 100%)",
+          border: "1px solid color-mix(in srgb, var(--ultra-50) 60%, transparent)",
           boxShadow:
-            "0 4px 12px rgba(46,93,230,0.45), inset 0 1px 2px rgba(230,237,253,0.55)",
+            "0 4px 12px color-mix(in srgb, var(--ultra-600) 45%, transparent), inset 0 1px 2px color-mix(in srgb, var(--ultra-50) 55%, transparent)",
         }}
       >
         <svg
           viewBox="0 0 20 20"
-          className="w-3.5 h-3.5 text-[#E6EDFD] fill-current"
+          className="w-3.5 h-3.5 text-ink fill-current"
         >
           <path d="M10 2.5 L12.2 7.1 L17.2 7.8 L13.6 11.3 L14.5 16.3 L10 13.9 L5.5 16.3 L6.4 11.3 L2.8 7.8 L7.8 7.1 Z" />
         </svg>
@@ -292,14 +292,14 @@ export const GlassStreamIcon: React.FC<IconProps> = ({
       <div
         className="absolute right-2.5 w-4 h-5 rounded-md"
         style={{
-          background: "linear-gradient(135deg, #6E92F2 0%, #2E5DE6 100%)",
-          boxShadow: "0 4px 12px rgba(46,93,230,0.55)",
+          background: "linear-gradient(135deg, var(--ultra-400) 0%, var(--ultra-600) 100%)",
+          boxShadow: "0 4px 12px color-mix(in srgb, var(--ultra-600) 55%, transparent)",
         }}
       />
       <div
         className="absolute right-0.5 w-2.5 h-3.5 rounded-sm"
         style={{
-          background: "linear-gradient(135deg, #AFC5F8 0%, #6E92F2 100%)",
+          background: "linear-gradient(135deg, var(--ultra-200) 0%, var(--ultra-400) 100%)",
           clipPath: "polygon(0 30%, 100% 0, 100% 100%, 0 70%)",
         }}
       />
@@ -307,15 +307,15 @@ export const GlassStreamIcon: React.FC<IconProps> = ({
         className="absolute left-1 w-5 h-7 rounded-lg flex flex-col justify-center gap-1 px-1"
         style={{
           background:
-            "linear-gradient(145deg, rgba(230,237,253,0.45) 0%, rgba(175,197,248,0.22) 100%)",
-          border: "1px solid rgba(230,237,253,0.58)",
-          boxShadow: "0 6px 14px rgba(7,16,57,0.45)",
+            "linear-gradient(145deg, color-mix(in srgb, var(--ultra-50) 45%, transparent) 0%, color-mix(in srgb, var(--ultra-200) 22%, transparent) 100%)",
+          border: "1px solid color-mix(in srgb, var(--ultra-50) 58%, transparent)",
+          boxShadow: "0 6px 14px color-mix(in srgb, var(--ultra-950) 45%, transparent)",
         }}
       >
-        <span className="h-[2.5px] w-full rounded-full bg-[#E6EDFD]" />
-        <span className="h-[2.5px] w-full rounded-full bg-[#E6EDFD]/90" />
-        <span className="h-[2.5px] w-full rounded-full bg-[#E6EDFD]/85" />
-        <span className="h-[2.5px] w-full rounded-full bg-[#AFC5F8]" />
+        <span className="h-[2.5px] w-full rounded-full bg-ink" />
+        <span className="h-[2.5px] w-full rounded-full bg-ink/90" />
+        <span className="h-[2.5px] w-full rounded-full bg-ink/85" />
+        <span className="h-[2.5px] w-full rounded-full bg-mist" />
       </div>
     </div>
   );

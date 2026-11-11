@@ -23,12 +23,12 @@ import type { ChatConversationItem, ChatMessageItem } from "./types";
 
 const GLASS_PANEL: React.CSSProperties = {
   background:
-    "linear-gradient(160deg, rgba(175,197,248,0.18) 0%, rgba(26,59,176,0.28) 45%, rgba(15,34,112,0.78) 100%)",
-  borderTop: "1.5px solid rgba(230,237,253,0.5)",
-  borderLeft: "1px solid rgba(230,237,253,0.3)",
-  borderRight: "1px solid rgba(175,197,248,0.22)",
-  borderBottom: "1.5px solid rgba(7,16,57,0.82)",
-  boxShadow: "0 18px 40px -12px rgba(7,16,57,0.85)",
+    "linear-gradient(160deg, color-mix(in srgb, var(--ultra-200) 18%, transparent) 0%, color-mix(in srgb, var(--ultra-800) 28%, transparent) 45%, color-mix(in srgb, var(--ultra-900) 78%, transparent) 100%)",
+  borderTop: "1.5px solid color-mix(in srgb, var(--ultra-50) 50%, transparent)",
+  borderLeft: "1px solid color-mix(in srgb, var(--ultra-50) 30%, transparent)",
+  borderRight: "1px solid color-mix(in srgb, var(--ultra-200) 22%, transparent)",
+  borderBottom: "1.5px solid color-mix(in srgb, var(--ultra-950) 82%, transparent)",
+  boxShadow: "0 18px 40px -12px color-mix(in srgb, var(--ultra-950) 85%, transparent)",
 };
 
 const LIST_POLL_MS = 10_000;
@@ -331,13 +331,13 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
   const rail = (
     <div className="flex flex-col h-full min-h-0">
-      <div className="p-3 border-b border-[#AFC5F8]/20 space-y-2.5">
+      <div className="p-3 border-b border-mist/20 space-y-2.5">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#AFC5F8]">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-mist">
               WhatsApp-style inbox
             </p>
-            <h3 className="font-display font-bold text-sm text-[#E6EDFD]">
+            <h3 className="font-display font-bold text-sm text-ink">
               {conversations.length}{" "}
               {conversations.length === 1 ? "conversation" : "conversations"}
             </h3>
@@ -350,7 +350,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
               if (selectedId) loadThread(selectedId, { silent: true });
             }}
             aria-label="Refresh chats"
-            className="p-2 rounded-xl text-[#AFC5F8] hover:text-white bg-[#071039]/55 border border-[#AFC5F8]/30 cursor-pointer"
+            className="p-2 rounded-xl text-mist hover:text-white bg-abyss/55 border border-mist/30 cursor-pointer"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${isLoadingList ? "animate-spin" : ""}`}
@@ -359,33 +359,33 @@ export const AdminChat: React.FC<AdminChatProps> = ({
         </div>
 
         <div className="relative">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#AFC5F8]/70" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-mist/70" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name, email or message…"
-            className="w-full pl-9 pr-3 py-2 rounded-xl text-xs text-[#E6EDFD] placeholder-[#AFC5F8]/60 bg-[#071039]/75 border border-[#AFC5F8]/35 focus:outline-none focus:ring-2 focus:ring-[#6E92F2]"
+            className="w-full pl-9 pr-3 py-2 rounded-xl text-xs text-ink placeholder-[var(--ultra-200)]/60 bg-abyss/75 border border-mist/35 focus:outline-none focus:ring-2 focus:ring-glow"
           />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto min-h-0">
         {isLoadingList && conversations.length === 0 ? (
-          <p className="p-5 text-xs text-[#AFC5F8]/80 text-center">
+          <p className="p-5 text-xs text-mist/80 text-center">
             Loading conversations…
           </p>
         ) : filteredConversations.length === 0 ? (
           <div className="p-6 text-center space-y-2">
-            <MessageCircle className="w-9 h-9 mx-auto text-[#6E92F2]/70" />
-            <p className="text-xs text-[#AFC5F8]/85">
+            <MessageCircle className="w-9 h-9 mx-auto text-glow/70" />
+            <p className="text-xs text-mist/85">
               {conversations.length === 0
                 ? "No chats yet. Messages sent from the website appear here instantly."
                 : "No conversation matches that search."}
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-[#AFC5F8]/12">
+          <ul className="divide-y divide-mist/12">
             {filteredConversations.map((conv) => {
               const isSelected = conv.id === selectedId;
               return (
@@ -395,8 +395,8 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                     onClick={() => openThread(conv.id)}
                     className={`w-full text-left px-3 py-3 flex items-start gap-3 transition-ui cursor-pointer ${
                       isSelected
-                        ? "bg-[#2E5DE6]/35 border-l-2 border-[#6E92F2]"
-                        : "hover:bg-[#AFC5F8]/10 border-l-2 border-transparent"
+                        ? "bg-accent/35 border-l-2 border-glow"
+                        : "hover:bg-mist/10 border-l-2 border-transparent"
                     }`}
                   >
                     <span className="relative shrink-0">
@@ -405,15 +405,15 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                           src={conv.googleAvatar}
                           alt=""
                           referrerPolicy="no-referrer"
-                          className="w-10 h-10 rounded-full object-cover border border-[#E6EDFD]/40"
+                          className="w-10 h-10 rounded-full object-cover border border-ink/40"
                         />
                       ) : (
-                        <span className="w-10 h-10 rounded-full grid place-items-center font-display font-bold text-xs text-[#E6EDFD] border border-[#E6EDFD]/35 bg-[linear-gradient(145deg,#2E5DE6,#0F2270)]">
+                        <span className="w-10 h-10 rounded-full grid place-items-center font-display font-bold text-xs text-ink border border-ink/35 bg-[linear-gradient(145deg,var(--ultra-600),var(--ultra-900))]">
                           {initialsOf(conv)}
                         </span>
                       )}
                       {conv.unreadByAdmin > 0 && (
-                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full grid place-items-center text-[10px] font-bold text-[#071039] bg-[#6E92F2] border border-[#E6EDFD]/60">
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full grid place-items-center text-[10px] font-bold text-abyss bg-glow border border-ink/60">
                           {conv.unreadByAdmin}
                         </span>
                       )}
@@ -421,28 +421,28 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
                     <span className="min-w-0 flex-1">
                       <span className="flex items-baseline justify-between gap-2">
-                        <span className="truncate font-display font-bold text-[13px] text-[#E6EDFD]">
+                        <span className="truncate font-display font-bold text-[13px] text-ink">
                           {conv.googleName || "Google user"}
                         </span>
-                        <span className="shrink-0 text-[10px] text-[#AFC5F8]/75">
+                        <span className="shrink-0 text-[10px] text-mist/75">
                           {formatRailTime(conv.lastMessageAt)}
                         </span>
                       </span>
                       <span className="mt-0.5 flex items-center gap-1.5">
                         {conv.lastSender === "admin" && (
-                          <CheckCheck className="w-3 h-3 shrink-0 text-[#6E92F2]" />
+                          <CheckCheck className="w-3 h-3 shrink-0 text-glow" />
                         )}
                         <span
                           className={`truncate text-[11px] ${
                             conv.unreadByAdmin > 0
-                              ? "text-[#E6EDFD] font-semibold"
-                              : "text-[#AFC5F8]/80"
+                              ? "text-ink font-semibold"
+                              : "text-mist/80"
                           }`}
                         >
                           {conv.lastMessagePreview || "No messages yet"}
                         </span>
                       </span>
-                      <span className="block truncate text-[10px] text-[#AFC5F8]/55 mt-0.5">
+                      <span className="block truncate text-[10px] text-mist/55 mt-0.5">
                         {conv.googleEmail || "legacy visitor thread"}
                       </span>
                     </span>
@@ -459,12 +459,12 @@ export const AdminChat: React.FC<AdminChatProps> = ({
   const thread = selected ? (
     <div className="flex flex-col h-full min-h-0">
       {/* Thread header */}
-      <div className="px-3 sm:px-4 py-3 flex items-center gap-3 border-b border-[#AFC5F8]/20 bg-[#071039]/45">
+      <div className="px-3 sm:px-4 py-3 flex items-center gap-3 border-b border-mist/20 bg-abyss/45">
         <button
           type="button"
           onClick={() => setMobileThreadOpen(false)}
           aria-label="Back to conversations"
-          className="lg:hidden p-1.5 rounded-lg text-[#AFC5F8] hover:text-white cursor-pointer"
+          className="lg:hidden p-1.5 rounded-lg text-mist hover:text-white cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -474,20 +474,20 @@ export const AdminChat: React.FC<AdminChatProps> = ({
             src={selected.googleAvatar}
             alt=""
             referrerPolicy="no-referrer"
-            className="w-10 h-10 rounded-full object-cover border border-[#E6EDFD]/40"
+            className="w-10 h-10 rounded-full object-cover border border-ink/40"
           />
         ) : (
-          <span className="w-10 h-10 rounded-full grid place-items-center font-display font-bold text-xs text-[#E6EDFD] border border-[#E6EDFD]/35 bg-[linear-gradient(145deg,#2E5DE6,#0F2270)]">
+          <span className="w-10 h-10 rounded-full grid place-items-center font-display font-bold text-xs text-ink border border-ink/35 bg-[linear-gradient(145deg,var(--ultra-600),var(--ultra-900))]">
             {initialsOf(selected)}
           </span>
         )}
 
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display font-bold text-sm text-[#E6EDFD]">
+          <p className="truncate font-display font-bold text-sm text-ink">
             {selected.googleName || "Google user"}
           </p>
-          <p className="truncate text-[11px] text-[#AFC5F8]/80 flex items-center gap-1.5">
-            <ShieldCheck className="w-3 h-3 text-[#6E92F2] shrink-0" />
+          <p className="truncate text-[11px] text-mist/80 flex items-center gap-1.5">
+            <ShieldCheck className="w-3 h-3 text-glow shrink-0" />
             {selected.googleEmail || "Verified visitor thread"}
             {selected.unreadByVisitor > 0
               ? ` · ${selected.unreadByVisitor} unread by them`
@@ -499,7 +499,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
           type="button"
           onClick={() => loadThread(selected.id, { silent: true })}
           aria-label="Refresh conversation"
-          className="p-2 rounded-xl text-[#AFC5F8] hover:text-white bg-[#071039]/55 border border-[#AFC5F8]/30 cursor-pointer"
+          className="p-2 rounded-xl text-mist hover:text-white bg-abyss/55 border border-mist/30 cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5" />
         </button>
@@ -507,7 +507,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
           type="button"
           onClick={handleDeleteThread}
           aria-label="Delete conversation"
-          className="p-2 rounded-xl text-[#F8AFC5] hover:text-white bg-[#071039]/55 border border-[#F8AFC5]/30 cursor-pointer"
+          className="p-2 rounded-xl text-[#F8AFC5] hover:text-white bg-abyss/55 border border-[#F8AFC5]/30 cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
@@ -519,17 +519,17 @@ export const AdminChat: React.FC<AdminChatProps> = ({
         className="flex-1 overflow-y-auto min-h-0 px-3 sm:px-5 py-4 space-y-4"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 18% 12%, rgba(110,146,242,0.16), transparent 42%), radial-gradient(circle at 82% 78%, rgba(46,93,230,0.18), transparent 46%)",
+            "radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--ultra-400) 16%, transparent), transparent 42%), radial-gradient(circle at 82% 78%, color-mix(in srgb, var(--ultra-600) 18%, transparent), transparent 46%)",
         }}
       >
         {isLoadingThread && messages.length === 0 ? (
-          <p className="text-xs text-[#AFC5F8]/80 text-center pt-8">
+          <p className="text-xs text-mist/80 text-center pt-8">
             Loading conversation…
           </p>
         ) : messages.length === 0 ? (
           <div className="text-center space-y-2 pt-10">
-            <MessageCircle className="w-10 h-10 mx-auto text-[#6E92F2]/70" />
-            <p className="text-xs text-[#AFC5F8]/85 max-w-xs mx-auto">
+            <MessageCircle className="w-10 h-10 mx-auto text-glow/70" />
+            <p className="text-xs text-mist/85 max-w-xs mx-auto">
               This thread has no messages yet. Say hello — the visitor sees it in
               their notification drawer on the live website.
             </p>
@@ -538,7 +538,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
           groupedMessages.map((group) => (
             <div key={group.label} className="space-y-2">
               <div className="flex justify-center">
-                <span className="px-3 py-1 rounded-full text-[10px] font-semibold text-[#AFC5F8] bg-[#071039]/70 border border-[#AFC5F8]/25">
+                <span className="px-3 py-1 rounded-full text-[10px] font-semibold text-mist bg-abyss/70 border border-mist/25">
                   {group.label}
                 </span>
               </div>
@@ -559,26 +559,26 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                         mine
                           ? {
                               background:
-                                "linear-gradient(150deg, rgba(46,93,230,0.95) 0%, rgba(15,34,112,0.95) 100%)",
-                              border: "1px solid rgba(230,237,253,0.42)",
-                              boxShadow: "0 10px 22px -12px rgba(7,16,57,0.9)",
+                                "linear-gradient(150deg, color-mix(in srgb, var(--ultra-600) 95%, transparent) 0%, color-mix(in srgb, var(--ultra-900) 95%, transparent) 100%)",
+                              border: "1px solid color-mix(in srgb, var(--ultra-50) 42%, transparent)",
+                              boxShadow: "0 10px 22px -12px color-mix(in srgb, var(--ultra-950) 90%, transparent)",
                             }
                           : {
-                              background: "rgba(175,197,248,0.14)",
-                              border: "1px solid rgba(230,237,253,0.28)",
+                              background: "color-mix(in srgb, var(--ultra-200) 14%, transparent)",
+                              border: "1px solid color-mix(in srgb, var(--ultra-50) 28%, transparent)",
                             }
                       }
                     >
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#AFC5F8]/85 mb-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-mist/85 mb-1">
                         {mine ? "You · Admin" : selected.googleName || "Visitor"}
                       </p>
-                      <p className="text-[13px] leading-relaxed text-[#E6EDFD] whitespace-pre-wrap break-words">
+                      <p className="text-[13px] leading-relaxed text-ink whitespace-pre-wrap break-words">
                         {msg.body}
                       </p>
-                      <p className="mt-1 flex items-center justify-end gap-1 text-[10px] text-[#AFC5F8]/75">
+                      <p className="mt-1 flex items-center justify-end gap-1 text-[10px] text-mist/75">
                         {pending ? "Sending…" : formatClock(msg.createdAt)}
                         {mine && !pending && (
-                          <CheckCheck className="w-3 h-3 text-[#AFC5F8]" />
+                          <CheckCheck className="w-3 h-3 text-mist" />
                         )}
                         {!mine && !pending && <Check className="w-3 h-3" />}
                       </p>
@@ -594,7 +594,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
       {/* Composer */}
       <form
         onSubmit={handleSend}
-        className="px-3 sm:px-4 py-3 border-t border-[#AFC5F8]/20 bg-[#071039]/55 flex items-end gap-2"
+        className="px-3 sm:px-4 py-3 border-t border-mist/20 bg-abyss/55 flex items-end gap-2"
       >
         <textarea
           ref={composerRef}
@@ -614,15 +614,15 @@ export const AdminChat: React.FC<AdminChatProps> = ({
             }
           }}
           placeholder="Type a message…  (Enter to send, Shift+Enter for a new line)"
-          className="flex-1 resize-none px-3.5 py-2.5 rounded-2xl text-[13px] text-[#E6EDFD] placeholder-[#AFC5F8]/60 bg-[#071039]/80 border border-[#AFC5F8]/35 focus:outline-none focus:ring-2 focus:ring-[#6E92F2] max-h-[132px]"
+          className="flex-1 resize-none px-3.5 py-2.5 rounded-2xl text-[13px] text-ink placeholder-[var(--ultra-200)]/60 bg-abyss/80 border border-mist/35 focus:outline-none focus:ring-2 focus:ring-glow max-h-[132px]"
         />
         <button
           type="submit"
           disabled={isSending || !draft.trim()}
-          className="shrink-0 px-4 py-2.5 rounded-2xl font-display font-bold text-xs text-[#E6EDFD] flex items-center gap-2 transition-ui cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+          className="shrink-0 px-4 py-2.5 rounded-2xl font-display font-bold text-xs text-ink flex items-center gap-2 transition-ui cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
           style={{
-            background: "linear-gradient(135deg, #2E5DE6 0%, #6E92F2 100%)",
-            border: "1px solid rgba(230,237,253,0.5)",
+            background: "linear-gradient(135deg, var(--ultra-600) 0%, var(--ultra-400) 100%)",
+            border: "1px solid color-mix(in srgb, var(--ultra-50) 50%, transparent)",
           }}
         >
           <Send className="w-3.5 h-3.5" />
@@ -635,11 +635,11 @@ export const AdminChat: React.FC<AdminChatProps> = ({
   ) : (
     <div className="h-full grid place-items-center p-6 text-center">
       <div className="space-y-2 max-w-xs">
-        <MessageCircle className="w-11 h-11 mx-auto text-[#6E92F2]/70" />
-        <h3 className="font-display font-bold text-base text-[#E6EDFD]">
+        <MessageCircle className="w-11 h-11 mx-auto text-glow/70" />
+        <h3 className="font-display font-bold text-base text-ink">
           Pick a conversation
         </h3>
-        <p className="text-xs text-[#AFC5F8]/80">
+        <p className="text-xs text-mist/80">
           Visitors sign in with a real Google account on mindspark-all and their
           messages land here as a live two-way thread.
         </p>
@@ -668,7 +668,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,320px)_1fr] h-full min-h-0">
           {/* Rail: always visible on desktop, swapped for the thread on mobile */}
           <div
-            className={`min-h-0 border-r border-[#AFC5F8]/20 ${
+            className={`min-h-0 border-r border-mist/20 ${
               mobileThreadOpen && selected ? "hidden lg:block" : "block"
             }`}
           >
@@ -686,8 +686,8 @@ export const AdminChat: React.FC<AdminChatProps> = ({
         </div>
       </div>
 
-      <p className="text-[11px] text-[#AFC5F8]/70 flex items-center gap-1.5 px-1">
-        <ShieldCheck className="w-3.5 h-3.5 text-[#6E92F2]" />
+      <p className="text-[11px] text-mist/70 flex items-center gap-1.5 px-1">
+        <ShieldCheck className="w-3.5 h-3.5 text-glow" />
         Chats refresh automatically. Identity is taken from the visitor&apos;s
         verified Google sign-in — it cannot be spoofed from the browser.
       </p>
