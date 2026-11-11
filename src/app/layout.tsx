@@ -1,4 +1,18 @@
-import type { Metadata } from 'next';
-import './globals.css';
-export const metadata: Metadata = { title: 'Mind Spark | Admin', description: 'Private Mind Spark admin dashboard' };
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body>{children}</body></html>; }
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "MIND SPARK · Admin Command Center",
+  description:
+    "Private Mind Spark admin console: announcement broadcasts, Google-verified student inbox, platform architect and appearance studio.",
+  robots: { index: false, follow: false },
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <body className="antialiased">{children}</body>
+    </html>
+  );
+}

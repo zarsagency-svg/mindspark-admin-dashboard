@@ -7,6 +7,7 @@
 export const ADMIN_EMAILS: readonly string[] = [
   'zarsagency@gmail.com',
   'zarsagency7@gmail.com',
+  'sadikurahman321@gmail.com',
 ];
 
 export const isAdminEmail = (email?: string | null): boolean =>
