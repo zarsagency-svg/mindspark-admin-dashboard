@@ -2,10 +2,10 @@
 
 This repository is undergoing security remediation and is NOT production-ready.
 
-The original passcode login endpoint is disabled. The announcements, messages, platforms and settings API handlers now require an admin bearer token validated against Supabase Auth and a matching verified Google identity. These checks fail closed if Supabase cannot be reached.
+The original passcode login endpoint is disabled. The admin sign-in UI now starts Supabase Google OAuth, but has not been tested end to end. The announcements, messages, platforms and settings API handlers now require an admin bearer token validated against Supabase Auth and a matching verified Google identity. These checks fail closed if Supabase cannot be reached.
 
 Still required before deployment:
-- Replace both simulated Google login and the client-side default-passcode UI with real Supabase Google OAuth and pass the access token to API requests.
+- Replace the separate student-facing simulated Google login with real verified authentication. Verify the admin Google OAuth flow and configure its redirect URL once the deployment hostname is known.
 - Connect a suitable database without exposing its credentials, and reconcile this app's schema with existing Supabase data; the archive's local database connection was removed.
 - Audit student-facing APIs and build authorization for users' own messages, rather than allowing admin-only access to all operations.
 - Test valid admin, non-admin, anonymous, expired and forged credentials, data isolation, and the complete Google sign-in redirect.

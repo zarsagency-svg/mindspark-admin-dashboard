@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { supabase, adminFetch } from "@/lib/supabase";
 import type { CSSProperties } from "react";
 import {
   BellRing,
@@ -70,8 +71,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activeSection, setActiveSection] =
     useState<AdminSection>("broadcasts");
-  const [isLocked, setIsLocked] = useState(false);
-  const [passcodeInput, setPasscodeInput] = useState("");
+  const [isLocked, setIsLocked] = useState(true);
   const [authError, setAuthError] = useState("");
 
   // Data states
@@ -140,10 +140,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsLoadingData(true);
     try {
       const [annRes, msgRes, pfRes, setRes] = await Promise.all([
-        fetch("/api/announcements"),
-        fetch("/api/messages"),
-        fetch("/api/platforms"),
-        fetch("/api/settings"),
+        adminFetch("/api/announcements"),
+        adminFetch("/api/messages"),
+        adminFetch("/api/platforms"),
+        adminFetch("/api/settings"),
       ]);
 
       if (annRes.ok) {
@@ -172,8 +172,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   useEffect(() => {
-    fetchAllAdminData();
+    const sync = async () => {
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+      setIsLocked(!user || user.email?.toLowerCase() !== "zarsagency@gmail.com" || !user.identities?.some((identity) => identity.provider === "google"));
+    };
+    void sync();
+    const { data } = supabase.auth.onAuthStateChange(() => { window.setTimeout(() => { void sync(); }, 0); });
+    return () => data.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => { if (!isLocked) void fetchAllAdminData(); }, [isLocked]);
 
   // Theme CSS calculation
   const hueShift = colourHue(settings.customColour) - 220;
@@ -189,7 +198,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (!bcTitle.trim() || !bcText.trim()) return;
     setIsPublishingBc(true);
     try {
-      const res = await fetch("/api/announcements", {
+      const res = await adminFetch("/api/announcements", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -220,7 +229,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleTogglePinAnnouncement = async (item: AnnouncementItem) => {
     const nextPinned = !item.isPinned;
     try {
-      const res = await fetch("/api/announcements", {
+      const res = await adminFetch("/api/announcements", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -263,7 +272,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (!replyText) return;
     setSendingReplyId(msgId);
     try {
-      const res = await fetch("/api/messages", {
+      const res = await adminFetch("/api/messages", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -292,7 +301,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     status: "read" | "unread"
   ) => {
     try {
-      const res = await fetch("/api/messages", {
+      const res = await adminFetch("/api/messages", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: msgId, status }),
@@ -361,7 +370,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     try {
       const method = editingPlatformId ? "PUT" : "POST";
-      const res = await fetch("/api/platforms", {
+      const res = await adminFetch("/api/platforms", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -420,7 +429,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleResetDefaultPlatforms = async () => {
     try {
-      const res = await fetch("/api/platforms", {
+      const res = await adminFetch("/api/platforms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "reset" }),
@@ -443,7 +452,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     onSettingsUpdated?.(nextSettings);
     setIsSavingSettings(true);
     try {
-      await fetch("/api/settings", {
+      await adminFetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -463,26 +472,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleUnlockSession = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError("");
-    try {
-      const res = await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passcode: passcodeInput }),
-      });
-      if (res.ok) {
-        setIsLocked(false);
-        setPasscodeInput("");
-        showToast("Admin session unlocked! Welcome back, Mr Sad.");
-      } else {
-        setAuthError("Incorrect passcode. Default is mindspark2026");
-      }
-    } catch {
-      if (passcodeInput === "mindspark2026") {
-        setIsLocked(false);
-      } else {
-        setAuthError("Verification error. Try mindspark2026");
-      }
-    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/admin` },
+    });
+    if (error) setAuthError("Google sign-in could not start. Please try again.");
+  };
+
+  const lockSession = async () => {
+    await supabase.auth.signOut();
+    setIsLocked(true);
   };
 
   // Filtered student messages
@@ -571,19 +570,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           <form onSubmit={handleUnlockSession} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-[#AFC5F8] mb-1.5">
-                Enter Admin Passcode (Default:{" "}
-                <code className="text-[#E6EDFD] font-mono">mindspark2026</code>)
-              </label>
-              <input
-                type="password"
-                value={passcodeInput}
-                onChange={(e) => setPasscodeInput(e.target.value)}
-                placeholder="Enter passcode..."
-                className="w-full px-4 py-3 rounded-2xl text-sm text-[#E6EDFD] bg-[#071039]/80 border border-[#AFC5F8]/40 focus:outline-none focus:ring-2 focus:ring-[#6E92F2]"
-              />
-            </div>
+            <p className="text-xs text-[#AFC5F8]">Sign in with the approved Google account to access the dashboard.</p>
 
             {authError && (
               <p className="text-xs text-[#FCA5A5] bg-[#EF4444]/20 border border-[#EF4444]/40 rounded-xl px-3 py-2">
@@ -601,7 +588,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               }}
             >
               <Unlock className="w-4 h-4" />
-              <span>Unlock Admin Command Center</span>
+              <span>Continue with Google</span>
             </button>
 
             {onSwitchToPortal && (
@@ -809,7 +796,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <button
             type="button"
-            onClick={() => setIsLocked(true)}
+            onClick={() => { void lockSession(); }}
             className="w-full py-2.5 px-4 rounded-2xl font-display font-semibold text-xs text-[#AFC5F8] hover:text-[#E6EDFD] hover:bg-white/10 flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <Lock className="w-3.5 h-3.5" />
@@ -893,7 +880,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <button
               type="button"
-              onClick={() => setIsLocked(true)}
+              onClick={() => { void lockSession(); }}
               aria-label="Lock Admin"
               className="lg:hidden p-2.5 rounded-2xl text-[#AFC5F8] hover:text-white border border-[#AFC5F8]/30 cursor-pointer"
             >
