@@ -3,9 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MIND SPARK · Admin Command Center",
-  description:
-    "Private Mind Spark admin console: announcement broadcasts, Google-verified student inbox, platform architect and appearance studio.",
+  title: "MIND SPARK · Admin",
+  description: "MIND SPARK Admin Console",
   robots: { index: false, follow: false },
 };
 

@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { GlassShieldIcon, GoogleGLogo } from "@/components/GlassIcons3D";
 import { isAdminEmail } from "@/lib/admins";
-import { PUBLIC_SITE_URL } from "@/lib/config";
 import { supabase } from "@/lib/supabase";
 
 const glassPanel: React.CSSProperties = {
@@ -30,12 +29,14 @@ export default function AdminConsole() {
       const { data, error: userError } = await supabase.auth.getUser();
       if (!live) return;
       const email = data.user?.email?.toLowerCase() ?? "";
-      // The database enforces this too — the check here only decides which
-      // screen to render, so a non-admin never reaches any admin data.
       const approved =
         !userError &&
         isAdminEmail(email) &&
-        Boolean(data.user?.identities?.some((identity) => identity.provider === "google"));
+        Boolean(
+          data.user?.identities?.some(
+            (identity) => identity.provider === "google"
+          )
+        );
       setAdminEmail(approved ? email : "");
       setChecking(false);
     };
@@ -72,7 +73,7 @@ export default function AdminConsole() {
   if (checking) {
     return (
       <main className="site-shell min-h-[100dvh] flex items-center justify-center p-4">
-        <p className="text-sm text-[#AFC5F8] animate-pulse">Verifying your Google session…</p>
+        <div className="w-6 h-6 rounded-full border-2 border-[#AFC5F8] border-t-transparent animate-spin" />
       </main>
     );
   }
@@ -81,40 +82,21 @@ export default function AdminConsole() {
     return (
       <main className="site-shell min-h-[100dvh] flex items-center justify-center p-4 relative overflow-hidden">
         <div
-          className="relative w-full max-w-md rounded-[28px] p-6 sm:p-8 text-[#E6EDFD] animate-pop-in"
+          className="relative w-full max-w-sm rounded-[28px] p-6 sm:p-8 text-[#E6EDFD] animate-pop-in text-center space-y-6"
           style={glassPanel}
         >
-          <div className="flex items-center gap-3.5 mb-5">
-            <GlassShieldIcon className="w-12 h-12 shrink-0" />
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#AFC5F8]">
-                MIND SPARK · Security Gate
-              </span>
-              <h1 className="font-display text-xl font-extrabold text-[#E6EDFD]">
-                Admin Command Center
-              </h1>
-            </div>
+          <div className="flex flex-col items-center gap-3">
+            <GlassShieldIcon className="w-14 h-14" />
+            <h1 className="font-display text-xl font-extrabold text-[#E6EDFD] tracking-tight">
+              MIND SPARK
+            </h1>
           </div>
-
-          <p className="text-sm text-[#AFC5F8] mb-5">
-            Sign in with an approved Google account to open the console. Broadcasts you publish
-            appear on{" "}
-            <a
-              href={PUBLIC_SITE_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-[#E6EDFD] underline decoration-[#6E92F2] underline-offset-2"
-            >
-              the live student site
-            </a>
-            .
-          </p>
 
           <button
             type="button"
             onClick={signInWithGoogle}
             disabled={starting}
-            className="w-full py-3 px-4 rounded-2xl font-display font-bold text-sm text-[#E6EDFD] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+            className="w-full py-3.5 px-4 rounded-2xl font-display font-bold text-sm text-[#E6EDFD] flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-60 transition-transform hover:scale-[1.01]"
             style={{
               background: "linear-gradient(135deg, #2E5DE6 0%, #6E92F2 100%)",
               border: "1px solid rgba(230,237,253,0.6)",
@@ -128,16 +110,11 @@ export default function AdminConsole() {
           {error && (
             <p
               role="alert"
-              className="mt-4 text-xs text-[#FCA5A5] bg-[#EF4444]/20 border border-[#EF4444]/40 rounded-xl px-3 py-2"
+              className="text-xs text-[#FCA5A5] bg-[#EF4444]/20 border border-[#EF4444]/40 rounded-xl px-3 py-2"
             >
               {error}
             </p>
           )}
-
-          <p className="mt-5 text-[11px] text-[#AFC5F8]">
-            Access is restricted to allowlisted administrators. Every request is re-checked in the
-            database.
-          </p>
         </div>
       </main>
     );
