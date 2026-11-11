@@ -1,11 +1,13 @@
 "use client";
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { supabase } from '@/lib/supabase';
+import { isAdminEmail } from '@/lib/admins';
 type Message = { id: string; sender_name: string | null; message: string; created_at: string; source: string };
 type Notice = { id: string; title: string; body: string; created_at: string; image_url: string | null };
 const prettyDate = (value: string) => new Date(value).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
 export default function Dashboard() {
   const [signedIn, setSignedIn] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
   const [checking, setChecking] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,7 +21,7 @@ export default function Dashboard() {
   const load = useCallback(async () => {
     setLoading(true); setError('');
     const { data, error: e } = await supabase.rpc('mindspark_dashboard_data');
-    if (e) { setMessages([]); setNotices([]); setError('Could not load dashboard data. Check that you signed in with the approved Google account.'); }
+    if (e) { setMessages([]); setNotices([]); setError('Could not load dashboard data. Check that you signed in with an approved Google account.'); }
     else { setMessages(data?.messages ?? []); setNotices(data?.notifications ?? []); }
     setLoading(false);
   }, []);
@@ -28,8 +30,9 @@ export default function Dashboard() {
     const sync = async () => {
       const { data, error: e } = await supabase.auth.getUser();
       if (!live) return;
-      const ok = !e && data.user?.email?.toLowerCase() === 'zarsagency@gmail.com' && data.user.identities?.some(i => i.provider === 'google');
-      setSignedIn(Boolean(ok)); setChecking(false);
+      const email = data.user?.email?.toLowerCase() ?? '';
+      const ok = !e && isAdminEmail(email) && Boolean(data.user?.identities?.some(i => i.provider === 'google'));
+      setSignedIn(Boolean(ok)); setAdminEmail(ok ? email : ''); setChecking(false);
       if (ok) await load(); else { setMessages([]); setNotices([]); }
     };
     void sync();
@@ -41,7 +44,7 @@ export default function Dashboard() {
     const { error: e } = await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo: `${window.location.origin}/`}});
     if (e) setError('Google sign-in could not start. Please try again.');
   };
-  const signOut = async () => { await supabase.auth.signOut(); setSignedIn(false); setMessages([]); setNotices([]); };
+  const signOut = async () => { await supabase.auth.signOut(); setSignedIn(false); setAdminEmail(''); setMessages([]); setNotices([]); };
   const publish = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !body.trim() || !window.confirm('Publish this announcement to visitors of both connected sites?')) return;
@@ -52,8 +55,8 @@ export default function Dashboard() {
     setSending(false);
   };
   if (checking) return <main className="login"><div className="panel">Checking your session…</div></main>;
-  if (!signedIn) return <main className="login"><div className="panel loginbox"><span className="badge">MIND SPARK · ADMIN</span><h1>Welcome back.</h1><p>Sign in with the approved Google account to open your dashboard.</p><button className="primary" onClick={signIn}>Continue with Google ↗</button>{error && <p role="alert">{error}</p>}<p className="muted">Access is restricted to the administrator.</p></div></main>;
-  return <div className="shell"><aside><div className="brand"><span className="logo">✦</span><div><b>MIND SPARK</b><small>ADMIN CONSOLE</small></div></div><p className="navlabel">WORKSPACE</p><button className={section === 'inbox' ? 'nav active' : 'nav'} onClick={() => setSection('inbox')}>✉ &nbsp; Inbox <span>{messages.length}</span></button><button className={section === 'broadcast' ? 'nav active' : 'nav'} onClick={() => setSection('broadcast')}>◉ &nbsp; Announcements</button><div className="sidebottom"><p>Signed in as<br/><b>zarsagency@gmail.com</b></p><button className="outline" onClick={signOut}>Sign out</button></div></aside>
+  if (!signedIn) return <main className="login"><div className="panel loginbox"><span className="badge">MIND SPARK · ADMIN</span><h1>Welcome back.</h1><p>Sign in with an approved Google account to open your dashboard.</p><button className="primary" onClick={signIn}>Continue with Google ↗</button>{error && <p role="alert">{error}</p>}<p className="muted">Access is restricted to approved administrators.</p></div></main>;
+  return <div className="shell"><aside><div className="brand"><span className="logo">✦</span><div><b>MIND SPARK</b><small>ADMIN CONSOLE</small></div></div><p className="navlabel">WORKSPACE</p><button className={section === 'inbox' ? 'nav active' : 'nav'} onClick={() => setSection('inbox')}>✉ &nbsp; Inbox <span>{messages.length}</span></button><button className={section === 'broadcast' ? 'nav active' : 'nav'} onClick={() => setSection('broadcast')}>◉ &nbsp; Announcements</button><div className="sidebottom"><p>Signed in as<br/><b>{adminEmail}</b></p><button className="outline" onClick={signOut}>Sign out</button></div></aside>
   <main className="content"><header><div><span className="eyebrow">MIND SPARK / ADMIN</span><h1>{section === 'inbox' ? 'Your inbox' : 'Announcements'}</h1><p>{section === 'inbox' ? 'Messages sent by your visitors, all in one place.' : 'Share an update with your connected websites.'}</p></div><button className="outline" onClick={() => void load()} disabled={loading}>↻ {loading ? 'Loading…' : 'Refresh'}</button></header>
   {error && <div className="alert" role="alert">{error}</div>}{status && <div className="success" role="status">{status}</div>}
   <div className="stats"><div className="stat"><small>VISITOR MESSAGES</small><strong>{messages.length}</strong><span>Most recent 200</span></div><div className="stat"><small>ANNOUNCEMENTS</small><strong>{notices.length}</strong><span>Most recent 100</span></div><div className="stat"><small>ANALYTICS</small><strong>—</strong><span>Not connected yet</span></div></div>
