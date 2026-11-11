@@ -25,8 +25,8 @@ import {
 } from "@/lib/notifications";
 import type { ChatConversationItem, ChatMessageItem } from "./types";
 
-const LIST_POLL_MS = 3_500;
-const THREAD_POLL_MS = 2_500;
+const LIST_POLL_MS = 4_000;
+const THREAD_POLL_MS = 3_000;
 const MAX_CHARS = 2000;
 
 const timeFormatter = new Intl.DateTimeFormat("en-IN", {
@@ -73,6 +73,50 @@ function initialsOf(conv: ChatConversationItem): string {
     .toUpperCase();
 }
 
+function areMessagesEqual(
+  a: ChatMessageItem[],
+  b: ChatMessageItem[]
+): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (
+      a[i].id !== b[i].id ||
+      a[i].body !== b[i].body ||
+      a[i].sender !== b[i].sender
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function areConversationsEqual(
+  a: ChatConversationItem[],
+  b: ChatConversationItem[]
+): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (
+      x.id !== y.id ||
+      x.lastMessageAt !== y.lastMessageAt ||
+      x.lastMessagePreview !== y.lastMessagePreview ||
+      x.lastSender !== y.lastSender ||
+      x.unreadByAdmin !== y.unreadByAdmin ||
+      x.unreadByVisitor !== y.unreadByVisitor ||
+      x.googleName !== y.googleName ||
+      x.googleEmail !== y.googleEmail ||
+      x.googleAvatar !== y.googleAvatar
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export interface IncomingBannerAlert {
   id: string;
   conversationId: string;
@@ -106,7 +150,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
   const [error, setError] = useState("");
   const [mobileThreadOpen, setMobileThreadOpen] = useState(false);
 
-  // Instagram-style live activity & animations state
+  // Live activity & reaction state
   const [incomingWaveConvIds, setIncomingWaveConvIds] = useState<
     Record<string, number>
   >({});
@@ -117,18 +161,40 @@ export const AdminChat: React.FC<AdminChatProps> = ({
     () => new Set()
   );
 
+  // Stable refs so polling callbacks never recreate or trigger effect loops
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const selectedRef = useRef<string | null>(null);
-  const knownIdsRef = useRef<Set<number>>(new Set());
+  const conversationsRef = useRef<ChatConversationItem[]>([]);
+  const onIncomingAlertRef = useRef(onIncomingAlert);
+  const onUnreadChangeRef = useRef(onUnreadChange);
+  const soundEnabledRef = useRef(soundEnabled);
+
+  // Per-conversation caches & request sequence guards
+  const messagesCacheRef = useRef<Map<string, ChatMessageItem[]>>(new Map());
+  const knownIdsByConvRef = useRef<Map<string, Set<number>>>(new Map());
+  const pendingByConvRef = useRef<Map<string, ChatMessageItem[]>>(new Map());
+  const stableKeyMapRef = useRef<Map<number, string>>(new Map());
+  const recentlyReadAtRef = useRef<Map<string, number>>(new Map());
+  const threadReqSeqRef = useRef(0);
+  const optimisticCounterRef = useRef(0);
   const initializedListRef = useRef(false);
   const prevConvStateRef = useRef<
     Map<string, { lastMessageAt: number; unreadByAdmin: number }>
   >(new Map());
-  const soundEnabledRef = useRef(soundEnabled);
-  soundEnabledRef.current = soundEnabled;
+  const lastNotifiedAtRef = useRef<Map<string, number>>(new Map());
+  const lastScrollStateRef = useRef<{
+    convId: string | null;
+    lastMsgId: number | null;
+    count: number;
+  }>({ convId: null, lastMsgId: null, count: 0 });
 
   selectedRef.current = selectedId;
+  conversationsRef.current = conversations;
+  onIncomingAlertRef.current = onIncomingAlert;
+  onUnreadChangeRef.current = onUnreadChange;
+  soundEnabledRef.current = soundEnabled;
+
   const selected = useMemo(
     () => conversations.find((c) => c.id === selectedId) ?? null,
     [conversations, selectedId]
@@ -151,22 +217,46 @@ export const AdminChat: React.FC<AdminChatProps> = ({
   );
 
   useEffect(() => {
-    onUnreadChange?.(totalUnread);
-  }, [totalUnread, onUnreadChange]);
+    onUnreadChangeRef.current?.(totalUnread);
+  }, [totalUnread]);
+
+  const markMessageFresh = useCallback((id: number) => {
+    setFreshMessageIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+    window.setTimeout(() => {
+      setFreshMessageIds((prev) => {
+        if (!prev.has(id)) return prev;
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 420);
+  }, []);
 
   const triggerIncomingWave = useCallback((convId: string) => {
     setIncomingWaveConvIds((prev) => ({ ...prev, [convId]: Date.now() }));
     window.setTimeout(() => {
       setIncomingWaveConvIds((prev) => {
+        if (!(convId in prev)) return prev;
         const copy = { ...prev };
         delete copy[convId];
         return copy;
       });
-    }, 3200);
+    }, 3000);
   }, []);
 
   const notifyNewVisitorMessage = useCallback(
     (conv: ChatConversationItem, messageBody: string) => {
+      const lastNotified = lastNotifiedAtRef.current.get(conv.id) ?? 0;
+      const now = Date.now();
+      if (now - lastNotified < 1500) {
+        return;
+      }
+      lastNotifiedAtRef.current.set(conv.id, now);
+
       triggerIncomingWave(conv.id);
       if (soundEnabledRef.current) {
         playMessageNotificationSound();
@@ -181,8 +271,8 @@ export const AdminChat: React.FC<AdminChatProps> = ({
           setMobileThreadOpen(true);
         },
       });
-      onIncomingAlert?.({
-        id: `${conv.id}-${Date.now()}`,
+      onIncomingAlertRef.current?.({
+        id: `${conv.id}-${now}`,
         conversationId: conv.id,
         senderName: conv.googleName || "Visitor",
         senderAvatar: conv.googleAvatar || "",
@@ -190,7 +280,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
         body: messageBody,
       });
     },
-    [onIncomingAlert, triggerIncomingWave]
+    [triggerIncomingWave]
   );
 
   const loadConversations = useCallback(async () => {
@@ -201,7 +291,23 @@ export const AdminChat: React.FC<AdminChatProps> = ({
         throw new Error(d.error || "Could not load chats");
       }
       const d = await res.json();
-      const next: ChatConversationItem[] = d.conversations || [];
+      const rawList: ChatConversationItem[] = Array.isArray(d.conversations)
+        ? d.conversations
+        : [];
+
+      const now = Date.now();
+      const next: ChatConversationItem[] = rawList.map((conv) => {
+        const readAt = recentlyReadAtRef.current.get(conv.id) ?? 0;
+        const isCurrentlyOpen = selectedRef.current === conv.id;
+        // Prevent stale unread badge from re-appearing right after opening a thread
+        if (
+          (isCurrentlyOpen || now - readAt < 5000) &&
+          conv.lastMessageAt <= (readAt || now)
+        ) {
+          return { ...conv, unreadByAdmin: 0 };
+        }
+        return conv;
+      });
 
       if (initializedListRef.current) {
         for (const conv of next) {
@@ -209,9 +315,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
           const isNewVisitorMsg =
             conv.lastSender === "visitor" &&
             ((!prev && conv.unreadByAdmin > 0) ||
-              (prev &&
-                (conv.lastMessageAt > prev.lastMessageAt ||
-                  conv.unreadByAdmin > prev.unreadByAdmin)));
+              (prev && conv.lastMessageAt > prev.lastMessageAt));
 
           if (isNewVisitorMsg) {
             notifyNewVisitorMessage(
@@ -227,15 +331,21 @@ export const AdminChat: React.FC<AdminChatProps> = ({
         { lastMessageAt: number; unreadByAdmin: number }
       >();
       for (const conv of next) {
+        const prev = prevConvStateRef.current.get(conv.id);
         nextMap.set(conv.id, {
-          lastMessageAt: conv.lastMessageAt,
+          lastMessageAt: Math.max(
+            conv.lastMessageAt || 0,
+            prev?.lastMessageAt || 0
+          ),
           unreadByAdmin: conv.unreadByAdmin,
         });
       }
       prevConvStateRef.current = nextMap;
       initializedListRef.current = true;
 
-      setConversations(next);
+      setConversations((prev) =>
+        areConversationsEqual(prev, next) ? prev : next
+      );
       setError("");
 
       setSelectedId((prev) => {
@@ -252,7 +362,12 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
   const loadThread = useCallback(
     async (id: string, opts: { silent?: boolean } = {}) => {
-      if (!opts.silent) setIsLoadingThread(true);
+      const reqSeq = ++threadReqSeqRef.current;
+      const hasCached = messagesCacheRef.current.has(id);
+      if (!opts.silent && !hasCached) {
+        setIsLoadingThread(true);
+      }
+
       try {
         const res = await adminFetch(
           `/api/chat/conversation?id=${encodeURIComponent(id)}`
@@ -262,24 +377,31 @@ export const AdminChat: React.FC<AdminChatProps> = ({
           throw new Error(d.error || "Could not load this chat");
         }
         const d = await res.json();
-        const next: ChatMessageItem[] = d.messages || [];
 
-        if (knownIdsRef.current.size > 0) {
-          const newlyArrivedVisitorMsgs = next.filter(
-            (m) => !knownIdsRef.current.has(m.id) && m.sender === "visitor"
+        // Ignore out-of-order response if another request or send started after this one
+        if (reqSeq !== threadReqSeqRef.current || selectedRef.current !== id) {
+          return;
+        }
+
+        const serverMessages: ChatMessageItem[] = Array.isArray(d.messages)
+          ? d.messages
+          : [];
+
+        const knownSet = knownIdsByConvRef.current.get(id);
+        if (knownSet && knownSet.size > 0) {
+          const newlyArrivedVisitorMsgs = serverMessages.filter(
+            (m) => !knownSet.has(m.id) && m.sender === "visitor"
           );
           if (newlyArrivedVisitorMsgs.length > 0) {
-            setFreshMessageIds((prev) => {
-              const updated = new Set(prev);
-              for (const m of newlyArrivedVisitorMsgs) updated.add(m.id);
-              return updated;
-            });
+            for (const m of newlyArrivedVisitorMsgs) {
+              markMessageFresh(m.id);
+            }
             const latest =
               newlyArrivedVisitorMsgs[newlyArrivedVisitorMsgs.length - 1];
             const convObj: ChatConversationItem | undefined =
-              d.conversation || conversations.find((c) => c.id === id);
+              d.conversation ||
+              conversationsRef.current.find((c) => c.id === id);
             if (convObj) {
-              // Update prevConvStateRef so list poll doesn't double-fire for the same message
               prevConvStateRef.current.set(id, {
                 lastMessageAt: Math.max(
                   convObj.lastMessageAt || 0,
@@ -292,35 +414,56 @@ export const AdminChat: React.FC<AdminChatProps> = ({
           }
         }
 
-        knownIdsRef.current = new Set(next.map((m) => m.id));
-        setMessages(next);
-        setConversations((prev) =>
-          prev.map((c) =>
+        const updatedKnown = new Set<number>(knownSet ?? []);
+        for (const m of serverMessages) {
+          updatedKnown.add(m.id);
+        }
+        knownIdsByConvRef.current.set(id, updatedKnown);
+
+        // Preserve any still-pending optimistic messages for this thread
+        const pendingList = pendingByConvRef.current.get(id) ?? [];
+        const merged =
+          pendingList.length > 0
+            ? [...serverMessages, ...pendingList]
+            : serverMessages;
+
+        messagesCacheRef.current.set(id, merged);
+        recentlyReadAtRef.current.set(id, Date.now());
+
+        setMessages((prev) => (areMessagesEqual(prev, merged) ? prev : merged));
+
+        setConversations((prev) => {
+          const next = prev.map((c) =>
             c.id === id
               ? { ...c, ...(d.conversation || {}), unreadByAdmin: 0 }
               : c
-          )
-        );
+          );
+          return areConversationsEqual(prev, next) ? prev : next;
+        });
+
         setError("");
       } catch (e) {
-        if (!opts.silent) {
+        if (!opts.silent && selectedRef.current === id) {
           setError(e instanceof Error ? e.message : "Could not load this chat");
         }
       } finally {
-        if (!opts.silent) setIsLoadingThread(false);
+        if (selectedRef.current === id) {
+          setIsLoadingThread(false);
+        }
       }
     },
-    [conversations, notifyNewVisitorMessage]
+    [markMessageFresh, notifyNewVisitorMessage]
   );
 
-  // Initial list load + background polling
+  // Initial list load + background polling (stable callbacks -> runs once on mount)
   useEffect(() => {
     void loadConversations();
     const timer = setInterval(() => void loadConversations(), LIST_POLL_MS);
     const onFocus = () => {
       void loadConversations();
-      if (selectedRef.current)
+      if (selectedRef.current) {
         void loadThread(selectedRef.current, { silent: true });
+      }
     };
     window.addEventListener("focus", onFocus);
     return () => {
@@ -329,14 +472,25 @@ export const AdminChat: React.FC<AdminChatProps> = ({
     };
   }, [loadConversations, loadThread]);
 
-  // Selected thread polling
+  // Selected thread load + background polling (only re-runs when selectedId or isActive changes)
   useEffect(() => {
     if (!selectedId) {
       setMessages([]);
+      setIsLoadingThread(false);
       return;
     }
-    knownIdsRef.current = new Set();
-    void loadThread(selectedId);
+
+    const cached = messagesCacheRef.current.get(selectedId);
+    if (cached) {
+      setMessages(cached);
+      setIsLoadingThread(false);
+      void loadThread(selectedId, { silent: true });
+    } else {
+      setMessages([]);
+      setIsLoadingThread(true);
+      void loadThread(selectedId, { silent: false });
+    }
+
     if (!isActive) return;
     const timer = setInterval(
       () => void loadThread(selectedId, { silent: true }),
@@ -345,16 +499,62 @@ export const AdminChat: React.FC<AdminChatProps> = ({
     return () => clearInterval(timer);
   }, [selectedId, isActive, loadThread]);
 
-  // Smooth scroll to bottom on new messages
+  // Smart scroll: jump immediately when switching threads, smooth scroll only when new messages arrive
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) {
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    if (!el || !selectedId) return;
+
+    const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+    const prev = lastScrollStateRef.current;
+
+    if (prev.convId !== selectedId) {
+      // Switched conversation: scroll immediately without animated jitter
+      el.scrollTop = el.scrollHeight;
+      lastScrollStateRef.current = {
+        convId: selectedId,
+        lastMsgId: lastMsg?.id ?? null,
+        count: messages.length,
+      };
+      return;
     }
-  }, [messages.length, selectedId, isLoadingThread, incomingWaveConvIds]);
+
+    // Same conversation: only scroll when a new message was added at the bottom
+    if (
+      messages.length > prev.count ||
+      (lastMsg && lastMsg.id !== prev.lastMsgId && prev.lastMsgId === null)
+    ) {
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior: prev.count === 0 ? "auto" : "smooth",
+      });
+    }
+
+    lastScrollStateRef.current = {
+      convId: selectedId,
+      lastMsgId: lastMsg?.id ?? null,
+      count: messages.length,
+    };
+  }, [messages, selectedId]);
 
   const openThread = (id: string) => {
-    setSelectedId(id);
+    recentlyReadAtRef.current.set(id, Date.now());
+    const prevState = prevConvStateRef.current.get(id);
+    if (prevState) {
+      prevConvStateRef.current.set(id, { ...prevState, unreadByAdmin: 0 });
+    }
+    setConversations((prev) => {
+      const next = prev.map((c) =>
+        c.id === id && c.unreadByAdmin !== 0 ? { ...c, unreadByAdmin: 0 } : c
+      );
+      return areConversationsEqual(prev, next) ? prev : next;
+    });
+
+    if (id !== selectedId) {
+      const cached = messagesCacheRef.current.get(id);
+      setMessages(cached ?? []);
+      setIsLoadingThread(!cached);
+      setSelectedId(id);
+    }
     setMobileThreadOpen(true);
     setDraft("");
     window.setTimeout(() => composerRef.current?.focus(), 60);
@@ -371,21 +571,42 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
   const sendMessageBody = async (rawBody: string) => {
     const body = rawBody.trim();
-    if (!body || !selectedId || isSending) return;
+    const targetConvId = selectedId;
+    if (!body || !targetConvId || isSending) return;
 
     setIsSending(true);
-    const optimisticId = -Date.now();
-    setFreshMessageIds((prev) => new Set(prev).add(optimisticId));
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: optimisticId,
-        conversationId: selectedId,
-        sender: "admin",
-        body,
-        createdAt: Date.now(),
-      },
+    // Invalidate any in-flight background poll started before this send
+    threadReqSeqRef.current += 1;
+
+    optimisticCounterRef.current += 1;
+    const optimisticId = -(
+      Date.now() * 100 +
+      (optimisticCounterRef.current % 100)
+    );
+    const stableKey = `msg-opt-${Math.abs(optimisticId)}`;
+    stableKeyMapRef.current.set(optimisticId, stableKey);
+
+    const optimisticMsg: ChatMessageItem = {
+      id: optimisticId,
+      conversationId: targetConvId,
+      sender: "admin",
+      body,
+      createdAt: Date.now(),
+    };
+
+    const existingPending = pendingByConvRef.current.get(targetConvId) ?? [];
+    pendingByConvRef.current.set(targetConvId, [
+      ...existingPending,
+      optimisticMsg,
     ]);
+
+    markMessageFresh(optimisticId);
+    setMessages((prev) => {
+      const next = [...prev, optimisticMsg];
+      messagesCacheRef.current.set(targetConvId, next);
+      return next;
+    });
+
     setDraft("");
     if (composerRef.current) {
       composerRef.current.style.height = "auto";
@@ -395,31 +616,83 @@ export const AdminChat: React.FC<AdminChatProps> = ({
       const res = await adminFetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId: selectedId, body }),
+        body: JSON.stringify({ conversationId: targetConvId, body }),
       });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.error || "Message not sent");
 
+      // Invalidate any poll that started while POST was in flight
+      threadReqSeqRef.current += 1;
+
       const saved: ChatMessageItem | undefined = d.message;
-      setMessages((prev) => {
-        const withoutOptimistic = prev.filter((m) => m.id !== optimisticId);
-        if (saved && !knownIdsRef.current.has(saved.id)) {
-          knownIdsRef.current.add(saved.id);
-          setFreshMessageIds((old) => new Set(old).add(saved.id));
-          return [...withoutOptimistic, saved];
+
+      // Remove this optimistic message from pending list
+      const currentPending = pendingByConvRef.current.get(targetConvId) ?? [];
+      pendingByConvRef.current.set(
+        targetConvId,
+        currentPending.filter((m) => m.id !== optimisticId)
+      );
+
+      if (saved) {
+        // Map saved.id to the same React key so the bubble updates in-place without remounting/shaking
+        stableKeyMapRef.current.set(saved.id, stableKey);
+        const knownSet =
+          knownIdsByConvRef.current.get(targetConvId) ?? new Set<number>();
+        knownSet.add(saved.id);
+        knownIdsByConvRef.current.set(targetConvId, knownSet);
+      }
+
+      const updateList = (list: ChatMessageItem[]): ChatMessageItem[] => {
+        if (!saved) {
+          return list.filter((m) => m.id !== optimisticId);
         }
-        return withoutOptimistic;
-      });
+        // If a poll already inserted saved.id, drop optimisticId; otherwise swap in place
+        const alreadyHasSaved = list.some((m) => m.id === saved.id);
+        if (alreadyHasSaved) {
+          return list.filter((m) => m.id !== optimisticId);
+        }
+        return list.map((m) => (m.id === optimisticId ? saved : m));
+      };
+
+      const cached = messagesCacheRef.current.get(targetConvId);
+      if (cached) {
+        messagesCacheRef.current.set(targetConvId, updateList(cached));
+      }
+      if (selectedRef.current === targetConvId) {
+        setMessages((prev) => updateList(prev));
+      }
+
       if (d.conversation) {
+        recentlyReadAtRef.current.set(targetConvId, Date.now());
+        prevConvStateRef.current.set(targetConvId, {
+          lastMessageAt: d.conversation.lastMessageAt || Date.now(),
+          unreadByAdmin: 0,
+        });
         setConversations((prev) =>
           prev.map((c) =>
-            c.id === selectedId ? { ...c, ...d.conversation } : c
+            c.id === targetConvId
+              ? { ...c, ...d.conversation, unreadByAdmin: 0 }
+              : c
           )
         );
       }
       setError("");
     } catch (e) {
-      setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      const currentPending = pendingByConvRef.current.get(targetConvId) ?? [];
+      pendingByConvRef.current.set(
+        targetConvId,
+        currentPending.filter((m) => m.id !== optimisticId)
+      );
+      const cached = messagesCacheRef.current.get(targetConvId);
+      if (cached) {
+        messagesCacheRef.current.set(
+          targetConvId,
+          cached.filter((m) => m.id !== optimisticId)
+        );
+      }
+      if (selectedRef.current === targetConvId) {
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      }
       setDraft(body);
       setError(e instanceof Error ? e.message : "Message not sent");
     } finally {
@@ -434,19 +707,24 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
   const handleDeleteThread = async () => {
     if (!selected) return;
+    const targetId = selected.id;
     const label = selected.googleName || selected.googleEmail || "this chat";
     if (!window.confirm(`Delete conversation with ${label}?`)) return;
 
     try {
       const res = await adminFetch(
-        `/api/chat/conversation?id=${encodeURIComponent(selected.id)}`,
+        `/api/chat/conversation?id=${encodeURIComponent(targetId)}`,
         { method: "DELETE" }
       );
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         throw new Error(d.error || "Could not delete chat");
       }
-      setConversations((prev) => prev.filter((c) => c.id !== selected.id));
+      messagesCacheRef.current.delete(targetId);
+      knownIdsByConvRef.current.delete(targetId);
+      pendingByConvRef.current.delete(targetId);
+      prevConvStateRef.current.delete(targetId);
+      setConversations((prev) => prev.filter((c) => c.id !== targetId));
       setMessages([]);
       setSelectedId(null);
       setMobileThreadOpen(false);
@@ -515,7 +793,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
         {isLoadingList && conversations.length === 0 ? (
           <div className="p-6 space-y-3">
             {[1, 2, 3, 4].map((n) => (
@@ -711,7 +989,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
       {/* Instagram DM Message Feed */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto min-h-0 px-3.5 sm:px-6 py-4 space-y-4"
+        className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 px-3.5 sm:px-6 py-4 space-y-4"
         style={{
           backgroundImage:
             "radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--ultra-400) 14%, transparent), transparent 42%), radial-gradient(circle at 82% 78%, color-mix(in srgb, var(--ultra-600) 16%, transparent), transparent 46%)",
@@ -761,10 +1039,12 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                 const isFresh = freshMessageIds.has(msg.id);
                 const isLiked = likedMessageIds.has(msg.id);
                 const isLastInGroup = idx === group.items.length - 1;
+                const reactKey =
+                  stableKeyMapRef.current.get(msg.id) ?? `msg-${msg.id}`;
 
                 return (
                   <div
-                    key={msg.id}
+                    key={reactKey}
                     className={`flex items-end gap-2 group ${
                       mine ? "justify-end" : "justify-start"
                     } ${
@@ -792,10 +1072,10 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                       </div>
                     )}
 
-                    <div className="relative max-w-[80%] sm:max-w-[66%]">
+                    <div className="relative max-w-[78%] sm:max-w-[66%]">
                       <div
                         onDoubleClick={() => toggleLikeMessage(msg.id)}
-                        className={`rounded-[22px] px-4 py-2.5 select-text cursor-pointer transition-transform active:scale-[0.98] ${
+                        className={`rounded-[22px] px-4 py-2.5 select-text cursor-pointer ${
                           mine ? "rounded-br-[6px]" : "rounded-bl-[6px]"
                         }`}
                         style={
@@ -842,7 +1122,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                         type="button"
                         onClick={() => toggleLikeMessage(msg.id)}
                         aria-label="React with heart"
-                        className={`absolute top-1/2 -translate-y-1/2 ${
+                        className={`hidden sm:inline-flex absolute top-1/2 -translate-y-1/2 ${
                           mine ? "-left-8" : "-right-8"
                         } opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full bg-abyss/80 border border-mist/25 text-mist hover:text-[#FB7185] cursor-pointer`}
                       >
@@ -866,7 +1146,9 @@ export const AdminChat: React.FC<AdminChatProps> = ({
 
                       {mine && isLastInGroup && !pending && (
                         <span className="block text-right text-[10px] text-mist/65 mt-1 pr-1">
-                          {selected.unreadByVisitor === 0 ? "Seen" : "Delivered"}
+                          {selected.unreadByVisitor === 0
+                            ? "Seen"
+                            : "Delivered"}
                         </span>
                       )}
                     </div>

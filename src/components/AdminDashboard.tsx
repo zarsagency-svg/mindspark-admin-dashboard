@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import {
   Bell,
@@ -93,16 +93,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [bcPinned, setBcPinned] = useState(false);
   const [isPublishingBc, setIsPublishingBc] = useState(false);
 
-  // Settings saving timer
+  // Timers
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => {
       setToastMessage((prev) => (prev === msg ? "" : prev));
     }, 3500);
-  };
+  }, []);
 
   // Unlock browser Web Audio on first user interaction & read notification permission
   useEffect(() => {
@@ -121,7 +123,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     };
   }, []);
 
-  const fetchAllAdminData = async () => {
+  const fetchAllAdminData = useCallback(async () => {
     try {
       const [annRes, setRes] = await Promise.all([
         adminFetch("/api/announcements"),
@@ -141,15 +143,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     } catch {
       // Silent initial retry handled by modules
     }
-  };
+  }, []);
 
   useEffect(() => {
     void fetchAllAdminData();
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
       if (bannerTimer.current) clearTimeout(bannerTimer.current);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
     };
-  }, []);
+  }, [fetchAllAdminData]);
 
   const handleEnableBrowserAlerts = async () => {
     const perm = await requestBrowserNotificationPermission();
@@ -176,13 +179,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const handleIncomingAlert = (alert: IncomingBannerAlert) => {
+  const handleIncomingAlert = useCallback((alert: IncomingBannerAlert) => {
     setIncomingBanner(alert);
     if (bannerTimer.current) clearTimeout(bannerTimer.current);
     bannerTimer.current = setTimeout(() => {
       setIncomingBanner((prev) => (prev?.id === alert.id ? null : prev));
     }, 5500);
-  };
+  }, []);
 
   const customStyle = {
     "--custom-colour": settings.customColour,
@@ -203,6 +206,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         const data = await res.json();
         if (data.settings) setSettings(data.settings);
         if (announce) showToast("Theme updated");
+      } else if (announce) {
+        const d = await res.json().catch(() => ({}));
+        showToast(d.error || "Failed to save theme");
       }
     } catch {
       if (announce) showToast("Failed to save theme");
@@ -261,13 +267,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             isPinned: bcPinned,
           }),
         });
-        if (res.ok) {
-          const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.announcement) {
           setAnnouncements((prev) =>
             prev.map((a) => (a.id === editingBcId ? data.announcement : a))
           );
           resetBroadcastForm();
           showToast("Announcement updated!");
+        } else {
+          showToast(data.error || "Error updating announcement");
         }
       } else {
         const res = await adminFetch("/api/announcements", {
@@ -282,11 +290,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             isPinned: bcPinned,
           }),
         });
-        if (res.ok) {
-          const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.announcement) {
           setAnnouncements((prev) => [data.announcement, ...prev]);
           resetBroadcastForm();
           showToast("Announcement published!");
+        } else {
+          showToast(data.error || "Error publishing announcement");
         }
       }
     } catch {
@@ -308,12 +318,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           tag: nextPinned ? "Pinned Announcement" : "Official Broadcast",
         }),
       });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.announcement) {
         setAnnouncements((prev) =>
           prev.map((a) => (a.id === item.id ? data.announcement : a))
         );
         showToast(nextPinned ? "Pinned" : "Unpinned");
+      } else {
+        showToast(data.error || "Could not update pin");
       }
     } catch {
       showToast("Could not update pin");
@@ -332,6 +344,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         setAnnouncements((prev) => prev.filter((a) => a.id !== id));
         if (editingBcId === id) resetBroadcastForm();
         showToast("Deleted");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || "Failed to delete");
       }
     } catch {
       showToast("Failed to delete");
@@ -897,9 +912,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       background:
                         "linear-gradient(135deg, var(--ultra-600) 0%, var(--ultra-400) 100%)",
                       border:
-                        "1px solid color-mix(in srgb, var(--ultra-50) 60%, transparent)",
+                        "1px solid color-mix(in srgb, var(--ultra-50) 55%, transparent)",
                       boxShadow:
-                        "0 10px 25px color-mix(in srgb, var(--ultra-600) 50%, transparent)",
+                        "0 10px 26px -6px color-mix(in srgb, var(--ultra-600) 60%, transparent)",
                     }}
                   >
                     <Send className="w-4 h-4" />
@@ -907,37 +922,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       {isPublishingBc
                         ? "Saving…"
                         : editingBcId
-                          ? "Update Announcement"
-                          : "Publish Announcement"}
+                          ? "Save Changes"
+                          : "Publish Live"}
                     </span>
                   </button>
                 </form>
 
                 {/* Live Preview Card */}
-                <div className="lg:col-span-5">
+                <div className="lg:col-span-5 space-y-2">
+                  <span className="text-[11px] font-display font-bold uppercase tracking-wider text-mist/80 px-1">
+                    Live Preview
+                  </span>
                   <div
-                    className="rounded-[22px] p-5 space-y-3"
+                    className="rounded-[24px] p-5 space-y-3"
                     style={{
                       background: "var(--notification-card-background)",
-                      backdropFilter: "var(--glass-soft-filter)",
                       border:
-                        "1px solid color-mix(in srgb, var(--ultra-50) 45%, transparent)",
-                      boxShadow:
-                        "0 14px 30px -8px color-mix(in srgb, var(--ultra-950) 70%, transparent)",
+                        "1px solid color-mix(in srgb, var(--ultra-50) 40%, transparent)",
                     }}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent/55 border border-ink/35 text-ink">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent/55 border border-mist/40 text-ink">
+                        {bcPinned && <Pin className="w-2.5 h-2.5" />}
                         {bcTag}
                       </span>
-                      <span className="text-[11px] text-mist">Preview</span>
+                      <span className="text-[11px] text-mist/75">Just now</span>
                     </div>
 
-                    <h3 className="font-display font-bold text-base text-ink">
+                    <h3 className="font-display font-extrabold text-base text-ink">
                       {bcTitle.trim() || "Announcement Title"}
                     </h3>
 
-                    <p className="text-xs sm:text-[13px] text-ink/90 leading-relaxed whitespace-pre-wrap">
+                    <p className="text-xs sm:text-sm text-ink/90 leading-relaxed whitespace-pre-wrap">
                       {bcText.trim() ||
                         "Your announcement preview will appear here as you type."}
                     </p>

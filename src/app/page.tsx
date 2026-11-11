@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { GlassShieldIcon, GoogleGLogo } from "@/components/GlassIcons3D";
 import { isAdminEmail } from "@/lib/admins";
@@ -17,6 +18,25 @@ const glassPanel: React.CSSProperties = {
     "0 25px 60px -12px rgba(7,16,57,0.95), 0 0 40px rgba(46,93,230,0.35)",
 };
 
+function hasGoogleIdentity(user: User | null | undefined): boolean {
+  if (!user) return false;
+  if (
+    user.identities?.some((identity) => identity.provider === "google")
+  ) {
+    return true;
+  }
+  if (user.app_metadata?.provider === "google") {
+    return true;
+  }
+  if (
+    Array.isArray(user.app_metadata?.providers) &&
+    user.app_metadata.providers.includes("google")
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export default function AdminConsole() {
   const [checking, setChecking] = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
@@ -25,27 +45,65 @@ export default function AdminConsole() {
 
   useEffect(() => {
     let live = true;
-    const sync = async () => {
-      const { data, error: userError } = await supabase.auth.getUser();
+
+    const applyUser = (user: User | null | undefined) => {
       if (!live) return;
-      const email = data.user?.email?.toLowerCase() ?? "";
-      const approved =
-        !userError &&
-        isAdminEmail(email) &&
-        Boolean(
-          data.user?.identities?.some(
-            (identity) => identity.provider === "google"
-          )
-        );
-      setAdminEmail(approved ? email : "");
+      if (!user) {
+        setAdminEmail("");
+        setChecking(false);
+        return;
+      }
+      const email = user.email?.trim().toLowerCase() ?? "";
+      const approved = isAdminEmail(email) && hasGoogleIdentity(user);
+      if (approved) {
+        setAdminEmail(email);
+        setError("");
+      } else {
+        setAdminEmail("");
+        if (email) {
+          setError(
+            `Account ${email} is not on the administrator allowlist.`
+          );
+        }
+      }
       setChecking(false);
     };
-    void sync();
-    const { data } = supabase.auth.onAuthStateChange(() => {
-      window.setTimeout(() => {
-        void sync();
-      }, 0);
+
+    const init = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!live) return;
+        if (session?.user) {
+          applyUser(session.user);
+        }
+        const { data, error: userError } = await supabase.auth.getUser();
+        if (!live) return;
+        if (!userError && data.user) {
+          applyUser(data.user);
+        } else if (!session?.user) {
+          applyUser(null);
+        }
+      } catch {
+        if (live) setChecking(false);
+      }
+    };
+
+    void init();
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!live) return;
+      if (event === "SIGNED_OUT" || !session) {
+        setAdminEmail("");
+        setChecking(false);
+        return;
+      }
+      if (session.user) {
+        applyUser(session.user);
+      }
     });
+
     return () => {
       live = false;
       data.subscription.unsubscribe();
