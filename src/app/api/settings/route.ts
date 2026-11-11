@@ -1,10 +1,13 @@
+import { requireAdmin } from "@/lib/requireAdmin";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { siteSettings } from "@/db/schema";
 import { ensureSeeded } from "@/db/seed";
 import { eq } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const rows = await db.select().from(siteSettings);
@@ -37,6 +40,8 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const body = await req.json();
@@ -111,34 +116,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    await ensureSeeded();
-    const body = await req.json();
-    const passcode = String(body.passcode || "").trim();
-    const rows = await db.select().from(siteSettings);
-    const expected = rows[0]?.adminPasscode || "mindspark2026";
-
-    if (passcode === expected || passcode === "mindspark2026") {
-      return NextResponse.json({
-        authenticated: true,
-        admin: {
-          name: "Mr Sad",
-          role: "Chief Ecosystem Administrator",
-          email: "mrsad.admin@mindspark.edu",
-        },
-      });
-    }
-
-    return NextResponse.json(
-      { authenticated: false, error: "Invalid Admin Passcode" },
-      { status: 401 }
-    );
-  } catch (error) {
-    console.error("POST /api/settings error:", error);
-    return NextResponse.json(
-      { error: "Failed to verify admin credentials" },
-      { status: 500 }
-    );
-  }
+// The previous default-passcode login was insecure. Google login must be wired in before deployment.
+export async function POST() {
+  return NextResponse.json({ error: "Passcode login is disabled" }, { status: 410 });
 }

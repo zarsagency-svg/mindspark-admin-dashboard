@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/requireAdmin";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { platforms } from "@/db/schema";
@@ -5,7 +6,9 @@ import { ensureSeeded } from "@/db/seed";
 import { DEFAULT_PLATFORMS, generateCustomPlatformSvg } from "@/data/platforms";
 import { asc, eq } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const rows = await db
@@ -23,6 +26,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const body = await req.json();
@@ -120,6 +125,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const body = await req.json();
@@ -180,6 +187,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const { searchParams } = new URL(req.url);

@@ -1,10 +1,13 @@
 # Security status — do not deploy
 
-This repository contains the original supplied project, saved for remediation only. It is NOT production-ready.
+This repository is undergoing security remediation and is NOT production-ready.
 
-- Admin passcode validation is client-side and/or uses an insecure default.
-- API endpoints lack proper authorization; message endpoints expose private data.
-- The Google login UI is simulated and does not verify a Google identity.
-- The provided database connection points to a local environment and was removed.
+The original passcode login endpoint is disabled. The announcements, messages, platforms and settings API handlers now require an admin bearer token validated against Supabase Auth and a matching verified Google identity. These checks fail closed if Supabase cannot be reached.
 
-Do not run or deploy this project against a real database until authentication, authorization, privacy, and the database integration have been redesigned and tested. The existing websites and their data should not be replaced by this project.
+Still required before deployment:
+- Replace both simulated Google login and the client-side default-passcode UI with real Supabase Google OAuth and pass the access token to API requests.
+- Connect a suitable database without exposing its credentials, and reconcile this app's schema with existing Supabase data; the archive's local database connection was removed.
+- Audit student-facing APIs and build authorization for users' own messages, rather than allowing admin-only access to all operations.
+- Test valid admin, non-admin, anonymous, expired and forged credentials, data isolation, and the complete Google sign-in redirect.
+
+The current API authorization is an intermediate safeguard, not a finished security review. The site will not work as intended until these steps are complete. Do not deploy against real data in this state.

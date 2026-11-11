@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/requireAdmin";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { studentMessages } from "@/db/schema";
@@ -5,6 +6,8 @@ import { ensureSeeded } from "@/db/seed";
 import { desc, eq } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const { searchParams } = new URL(req.url);
@@ -41,6 +44,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const body = await req.json();
@@ -116,6 +121,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const body = await req.json();
@@ -162,6 +169,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
   try {
     await ensureSeeded();
     const { searchParams } = new URL(req.url);
