@@ -41,7 +41,8 @@ import {
   GlassShieldIcon,
   GoogleGLogo,
 } from "./GlassIcons3D";
-import type { AnnouncementItem, StudentMessageItem } from "./types";
+import type { AnnouncementItem } from "./types";
+import { AdminChat } from "./AdminChat";
 import { PUBLIC_SITE_URL } from "@/lib/config";
 import { adminFetch } from "@/lib/supabase";
 
@@ -71,9 +72,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Data states
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
-  const [studentMessages, setStudentMessages] = useState<StudentMessageItem[]>(
-    []
-  );
+  /** Total unread chat bubbles, reported up by the AdminChat module. */
+  const [chatUnread, setChatUnread] = useState(0);
   const [platformsList, setPlatformsList] = useState<PlatformItem[]>([]);
   const [settings, setSettings] = useState<SiteSettingsData>({
     palette: "blue",
@@ -93,13 +93,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [bcPinned, setBcPinned] = useState(false);
   const [isPublishingBc, setIsPublishingBc] = useState(false);
 
-  // Module 2: Student Inbox State
-  const [inboxFilter, setInboxFilter] = useState<"all" | "unread" | "replied">(
-    "all"
-  );
-  const [inboxSearch, setInboxSearch] = useState("");
-  const [replyDrafts, setReplyDrafts] = useState<Record<number, string>>({});
-  const [sendingReplyId, setSendingReplyId] = useState<number | null>(null);
+  // Module 2 (chat) owns its own state inside <AdminChat />.
 
   // Module 3: Platform Form State
   const [editingPlatformId, setEditingPlatformId] = useState<number | null>(
@@ -133,9 +127,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const fetchAllAdminData = async () => {
     setIsLoadingData(true);
     try {
-      const [annRes, msgRes, pfRes, setRes] = await Promise.all([
+      const [annRes, pfRes, setRes] = await Promise.all([
         adminFetch("/api/announcements"),
-        adminFetch("/api/messages"),
         adminFetch("/api/platforms"),
         adminFetch("/api/settings"),
       ]);
@@ -143,10 +136,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       if (annRes.ok) {
         const d = await annRes.json();
         setAnnouncements(d.announcements || []);
-      }
-      if (msgRes.ok) {
-        const d = await msgRes.json();
-        setStudentMessages(d.messages || []);
       }
       if (pfRes.ok) {
         const d = await pfRes.json();
@@ -248,71 +237,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       }
     } catch {
       showToast("Failed to delete announcement.");
-    }
-  };
-
-  // Student Inbox Handlers
-  const handleSendReply = async (msgId: number) => {
-    const replyText = (replyDrafts[msgId] || "").trim();
-    if (!replyText) return;
-    setSendingReplyId(msgId);
-    try {
-      const res = await adminFetch("/api/messages", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: msgId,
-          adminReply: replyText,
-          status: "replied",
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setStudentMessages((prev) =>
-          prev.map((m) => (m.id === msgId ? data.message : m))
-        );
-        setReplyDrafts((prev) => ({ ...prev, [msgId]: "" }));
-        showToast("Reply saved to this conversation.");
-      }
-    } catch {
-      showToast("Failed to send reply.");
-    } finally {
-      setSendingReplyId(null);
-    }
-  };
-
-  const handleMarkMessageStatus = async (
-    msgId: number,
-    status: "read" | "unread"
-  ) => {
-    try {
-      const res = await adminFetch("/api/messages", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: msgId, status }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setStudentMessages((prev) =>
-          prev.map((m) => (m.id === msgId ? data.message : m))
-        );
-      }
-    } catch {
-      // ignore
-    }
-  };
-
-  const handleDeleteStudentMessage = async (msgId: number) => {
-    try {
-      const res = await adminFetch(`/api/messages?id=${msgId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setStudentMessages((prev) => prev.filter((m) => m.id !== msgId));
-        showToast("Student message deleted.");
-      }
-    } catch {
-      showToast("Failed to delete student message.");
     }
   };
 
@@ -452,28 +376,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  // Filtered student messages
-  const unreadMessagesCount = studentMessages.filter(
-    (m) => m.status === "unread"
-  ).length;
   const totalLikesCount = announcements.reduce(
     (sum, a) => sum + (a.likes || 0),
     0
   );
-
-  const filteredInbox = studentMessages.filter((m) => {
-    if (inboxFilter === "unread" && m.status !== "unread") return false;
-    if (inboxFilter === "replied" && m.status !== "replied") return false;
-    if (!inboxSearch.trim()) return true;
-    const q = inboxSearch.toLowerCase();
-    return (
-      m.googleName.toLowerCase().includes(q) ||
-      m.googleEmail.toLowerCase().includes(q) ||
-      m.subject.toLowerCase().includes(q) ||
-      m.message.toLowerCase().includes(q) ||
-      m.category.toLowerCase().includes(q)
-    );
-  });
 
   // Live preview item for Platform Architect
   const livePlatformPreview: PlatformItem = {
@@ -586,11 +492,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               },
               {
                 id: "inbox" as const,
-                label: "Student Inbox",
-                sub: "Google Verified DMs",
+                label: "Visitor Chats",
+                sub: "WhatsApp-style DMs",
                 icon: Inbox,
-                badge: unreadMessagesCount,
-                highlightBadge: unreadMessagesCount > 0,
+                badge: chatUnread,
+                highlightBadge: chatUnread > 0,
               },
               {
                 id: "platforms" as const,
@@ -725,7 +631,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="flex items-center gap-3">
             <GlassEnvelopeNotificationIcon
               className="w-11 h-11 shrink-0"
-              hasUnread={unreadMessagesCount > 0}
+              hasUnread={chatUnread > 0}
             />
             <div>
               <div className="flex items-center gap-2">
@@ -787,63 +693,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </header>
 
-        {/* Quick Telemetry KPI Strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          {[
-            {
-              label: "Active Platforms",
-              value: platformsList.length,
-              sub: `${settings.cardStyle === "folder" ? "3D Folders" : "Neon Cards"}`,
-              onClick: () => setActiveSection("platforms"),
-            },
-            {
-              label: "Live Broadcasts",
-              value: announcements.length,
-              sub: `${totalLikesCount} Student Likes`,
-              onClick: () => setActiveSection("broadcasts"),
-            },
-            {
-              label: "Student DMs",
-              value: studentMessages.length,
-              sub: `${unreadMessagesCount} Unread Messages`,
-              onClick: () => setActiveSection("inbox"),
-            },
-            {
-              label: "Active Theme",
-              value:
-                settings.palette.charAt(0).toUpperCase() +
-                settings.palette.slice(1),
-              sub: "Glassmorphic Engine",
-              onClick: () => setActiveSection("appearance"),
-            },
-          ].map((stat, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={stat.onClick}
-              className="text-left rounded-[22px] p-3.5 sm:p-4 transition-ui hover:-translate-y-0.5 cursor-pointer"
-              style={{
-                background:
-                  "linear-gradient(155deg, rgba(175,197,248,0.20) 0%, rgba(15,34,112,0.72) 100%)",
-                borderTop: "1.5px solid rgba(230,237,253,0.5)",
-                borderLeft: "1px solid rgba(230,237,253,0.3)",
-                borderRight: "1px solid rgba(175,197,248,0.2)",
-                borderBottom: "1.5px solid rgba(7,16,57,0.8)",
-                boxShadow: "0 12px 26px -8px rgba(7,16,57,0.7)",
-              }}
-            >
-              <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#AFC5F8]">
-                {stat.label}
-              </p>
-              <p className="font-display font-extrabold text-xl sm:text-2xl text-[#E6EDFD] mt-0.5">
-                {stat.value}
-              </p>
-              <p className="text-[11px] text-[#AFC5F8]/80 truncate mt-0.5">
-                {stat.sub}
-              </p>
-            </button>
-          ))}
-        </div>
 
         {/* ============================================================
             MODULE 1: ANNOUNCEMENT BROADCASTER
@@ -1146,247 +995,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
 
         {/* ============================================================
-            MODULE 2: GOOGLE-VERIFIED STUDENT INBOX
+            MODULE 2: WHATSAPP-STYLE CHAT WITH GOOGLE-SIGNED-IN VISITORS
+            Kept mounted (hidden) so unread badges stay live from any section.
         ============================================================ */}
-        {activeSection === "inbox" && (
-          <div className="space-y-5 animate-pop-in">
-            {/* Filter & Search Bar */}
-            <div
-              className="rounded-[22px] p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3"
-              style={{
-                background:
-                  "linear-gradient(145deg, rgba(175,197,248,0.18) 0%, rgba(15,34,112,0.75) 100%)",
-                border: "1px solid rgba(230,237,253,0.35)",
-              }}
-            >
-              <div className="flex items-center gap-1.5">
-                {(["all", "unread", "replied"] as const).map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => setInboxFilter(f)}
-                    className={`px-3.5 py-2 rounded-xl font-display font-bold text-xs capitalize transition-ui cursor-pointer ${
-                      inboxFilter === f
-                        ? "bg-[#2E5DE6] text-[#E6EDFD] shadow-md"
-                        : "text-[#AFC5F8] hover:text-white bg-[#071039]/45"
-                    }`}
-                  >
-                    {f}
-                    {f === "unread" && unreadMessagesCount > 0
-                      ? ` (${unreadMessagesCount})`
-                      : ""}
-                  </button>
-                ))}
-              </div>
-
-              <input
-                type="text"
-                value={inboxSearch}
-                onChange={(e) => setInboxSearch(e.target.value)}
-                placeholder="Search by Google name, @gmail.com, or batch..."
-                className="sm:w-72 px-3.5 py-2 rounded-xl text-xs text-[#E6EDFD] placeholder-[#AFC5F8]/60 bg-[#071039]/75 border border-[#AFC5F8]/35 focus:outline-none focus:ring-2 focus:ring-[#6E92F2]"
-              />
-            </div>
-
-            {filteredInbox.length === 0 ? (
-              <div
-                className="rounded-[24px] p-8 text-center space-y-2"
-                style={{
-                  background: "rgba(15, 34, 112, 0.55)",
-                  border: "1px solid rgba(175, 197, 248, 0.3)",
-                }}
-              >
-                <GlassChatBubbleIcon className="w-12 h-12 mx-auto" />
-                <h3 className="font-display font-bold text-base text-[#E6EDFD]">
-                  No student messages match this filter
-                </h3>
-                <p className="text-xs text-[#AFC5F8]">
-                  When students sign in with their Google Account on the
-                  website and send a message, it appears here immediately.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredInbox.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className="rounded-[24px] p-4 sm:p-5 space-y-4"
-                    style={{
-                      background:
-                        "linear-gradient(155deg, rgba(175,197,248,0.20) 0%, rgba(26,59,176,0.30) 50%, rgba(15,34,112,0.82) 100%)",
-                      borderTop: "1.5px solid rgba(230,237,253,0.55)",
-                      borderLeft: "1px solid rgba(230,237,253,0.35)",
-                      borderRight: "1px solid rgba(175,197,248,0.25)",
-                      borderBottom: "1.5px solid rgba(7,16,57,0.85)",
-                      boxShadow: "0 14px 32px -8px rgba(7,16,57,0.75)",
-                    }}
-                  >
-                    {/* Student Google Account Header */}
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-11 h-11 rounded-2xl flex items-center justify-center font-display font-bold text-sm text-[#E6EDFD] shrink-0"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #2E5DE6 0%, #6E92F2 100%)",
-                            border: "1.5px solid rgba(230,237,253,0.7)",
-                          }}
-                        >
-                          {msg.googleAvatar}
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-display font-bold text-base text-[#E6EDFD]">
-                              {msg.googleName}
-                            </h4>
-                            {msg.googleEmail ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#071039]">
-                                <GoogleGLogo className="w-3 h-3" />
-                                <span>Google Verified</span>
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#AFC5F8]/25 border border-[#AFC5F8]/40 text-[#E6EDFD]">
-                                Visitor
-                              </span>
-                            )}
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#2E5DE6]/50 border border-[#AFC5F8]/40 text-[#E6EDFD]">
-                              {msg.category}
-                            </span>
-                          </div>
-                          <p className="text-xs text-[#AFC5F8] mt-0.5">
-                            {msg.googleEmail ? `${msg.googleEmail} · ` : ""}
-                            {new Date(msg.createdAt).toLocaleDateString(
-                              "en-IN",
-                              {
-                                day: "numeric",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
-                            msg.status === "unread"
-                              ? "bg-[#F59E0B]/30 text-[#FDE68A] border border-[#F59E0B]/50"
-                              : msg.status === "replied"
-                                ? "bg-[#10B981]/30 text-[#A7F3D0] border border-[#10B981]/50"
-                                : "bg-white/10 text-[#AFC5F8]"
-                          }`}
-                        >
-                          {msg.status}
-                        </span>
-
-                        {msg.status === "unread" && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleMarkMessageStatus(msg.id, "read")
-                            }
-                            title="Mark as Read"
-                            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-[#E6EDFD] cursor-pointer"
-                          >
-                            <MailCheck className="w-4 h-4" />
-                          </button>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteStudentMessage(msg.id)}
-                          title="Delete Message"
-                          className="p-2 rounded-xl bg-[#EF4444]/20 hover:bg-[#EF4444]/40 text-[#FCA5A5] border border-[#EF4444]/35 cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Message Subject & Body */}
-                    <div className="p-3.5 rounded-2xl bg-[#071039]/60 border border-[#AFC5F8]/25 space-y-1">
-                      {msg.subject && (
-                        <p className="font-display font-bold text-sm text-[#E6EDFD]">
-                          {msg.subject}
-                        </p>
-                      )}
-                      <p className="text-xs sm:text-sm text-[#E6EDFD]/90 leading-relaxed whitespace-pre-wrap">
-                        {msg.message}
-                      </p>
-                    </div>
-
-                    {/* Existing Admin Reply if present */}
-                    {msg.adminReply && (
-                      <div
-                        className="p-3.5 rounded-2xl space-y-1"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, rgba(46,93,230,0.35) 0%, rgba(15,34,112,0.85) 100%)",
-                          border: "1px solid rgba(230,237,253,0.45)",
-                        }}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#6E92F2]" />
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#AFC5F8]">
-                            Your Official Reply Sent
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-[#E6EDFD]">
-                          {msg.adminReply}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Direct Reply Input Row */}
-                    <div className="flex flex-col sm:flex-row gap-2.5">
-                      <input
-                        type="text"
-                        value={replyDrafts[msg.id] || ""}
-                        onChange={(e) =>
-                          setReplyDrafts((prev) => ({
-                            ...prev,
-                            [msg.id]: e.target.value,
-                          }))
-                        }
-                        placeholder={
-                          msg.adminReply
-                            ? "Update your reply to this student..."
-                            : msg.googleEmail
-                              ? `Reply to ${msg.googleName} (${msg.googleEmail})...`
-                              : `Reply to ${msg.googleName}...`
-                        }
-                        className="flex-1 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-[#E6EDFD] placeholder-[#AFC5F8]/55 bg-[#071039]/75 border border-[#AFC5F8]/35 focus:outline-none focus:ring-2 focus:ring-[#6E92F2]"
-                      />
-                      <button
-                        type="button"
-                        disabled={sendingReplyId === msg.id}
-                        onClick={() => handleSendReply(msg.id)}
-                        className="px-4 py-2.5 rounded-xl font-display font-bold text-xs text-[#E6EDFD] flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #2E5DE6 0%, #6E92F2 100%)",
-                          border: "1px solid rgba(230,237,253,0.55)",
-                        }}
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                        <span>
-                          {sendingReplyId === msg.id
-                            ? "Sending..."
-                            : msg.adminReply
-                              ? "Update Reply"
-                              : "Send Reply"}
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        <div className={activeSection === "inbox" ? "block" : "hidden"}>
+          <AdminChat
+            isActive={activeSection === "inbox"}
+            onUnreadChange={setChatUnread}
+          />
+        </div>
 
         {/* ============================================================
             MODULE 3: PLATFORM ARCHITECT (ADD / EDIT / REMOVE PLATFORMS)
@@ -2016,9 +1633,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           { id: "broadcasts" as const, label: "Broadcast", icon: BellRing },
           {
             id: "inbox" as const,
-            label: "Inbox",
+            label: "Chats",
             icon: MessageSquare,
-            badge: unreadMessagesCount,
+            badge: chatUnread,
           },
           { id: "platforms" as const, label: "Platforms", icon: Plus },
           { id: "appearance" as const, label: "Colours", icon: Palette },

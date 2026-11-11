@@ -30,3 +30,31 @@ export interface StudentMessageItem {
   repliedAt?: number | null;
   createdAt: number;
 }
+
+/** One WhatsApp-style chat thread with a signed-in Google user. */
+export interface ChatConversationItem {
+  id: string;
+  googleEmail: string;
+  googleName: string;
+  /** Google profile photo URL, empty for legacy anonymous threads. */
+  googleAvatar: string;
+  /** Two-letter fallback when there is no photo. */
+  googleAvatarInitials: string;
+  lastMessagePreview: string;
+  lastSender: "visitor" | "admin";
+  unreadByAdmin: number;
+  unreadByVisitor: number;
+  /** Epoch milliseconds. */
+  lastMessageAt: number;
+  createdAt: number;
+}
+
+/** A single bubble inside a chat thread. */
+export interface ChatMessageItem {
+  id: number;
+  conversationId: string;
+  sender: "visitor" | "admin";
+  body: string;
+  /** Epoch milliseconds. */
+  createdAt: number;
+}
