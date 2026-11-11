@@ -1,15 +1,21 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   MIND SPARK — ADMIN CONSOLE DESIGN SYSTEM
-   --------------------------------------------------------------------------
-   Every colour in the console is derived from ONE variable, --brand. Pick a
-   palette in "Colour & Style" and the whole ramp (backgrounds, glass, borders,
-   text, glows, icons, buttons) is recomputed with color-mix(). No hue-rotate
-   filters, no per-element overrides: the theme is the token set.
+   MIND SPARK — ADMIN CONSOLE
+
+   The default Ultramarine look is defined with the original literal values, so
+   it renders exactly as it always has.
+
+   Choosing Crimson Red, Avocado Lime or a Custom Colour re-points --brand and
+   regenerates the entire 7-shade ramp with color-mix(), plus every glass,
+   folder and shadow recipe built on top of it. The whole console recolours —
+   not just the page background. (The old theme did this with hue-rotate filters
+   scoped to `.site-shell > main`, and this console has no <main>, so nothing
+   but the background ever changed.)
    ========================================================================== */
 
-/* Tailwind utilities that resolve at runtime, so theme swaps apply instantly. */
+/* Tailwind utilities that resolve at runtime, so a palette swap applies
+   instantly without a rebuild: bg-abyss, text-ink, border-mist/35, … */
 @theme inline {
   --color-abyss: var(--ultra-950);
   --color-deep: var(--ultra-900);
@@ -18,19 +24,66 @@
   --color-glow: var(--ultra-400);
   --color-mist: var(--ultra-200);
   --color-ink: var(--ultra-50);
-  --color-danger: #f43f5e;
-  --color-success: #10b981;
-  --color-warn: #f59e0b;
 }
 
 :root {
   color-scheme: dark;
 
-  /* ---- the single source of truth for the theme ----------------------- */
-  --brand: #2e5de6;
+  /* 7-Shade Ultramarine Palette (Ультрамарин) — original literals */
+  --ultra-950: #071039;
+  --ultra-900: #0f2270;
+  --ultra-800: #1a3bb0;
+  --ultra-600: #2e5de6;
+  --ultra-400: #6e92f2;
+  --ultra-200: #afc5f8;
+  --ultra-50: #e6edfd;
+
+  --community-background: linear-gradient(
+    145deg,
+    rgba(175, 197, 248, 0.28) 0%,
+    rgba(110, 146, 242, 0.18) 45%,
+    rgba(15, 34, 112, 0.72) 100%
+  );
+  --glass-filter: blur(8px) saturate(140%);
+  --glass-overlay-filter: blur(4px);
+  --glass-folder-filter: blur(6px) saturate(145%);
+  --glass-soft-filter: blur(4px);
+  --notification-card-background: linear-gradient(
+    155deg,
+    rgba(175, 197, 248, 0.24) 0%,
+    rgba(110, 146, 242, 0.16) 45%,
+    rgba(15, 34, 112, 0.72) 100%
+  );
+  --folder-shadow: drop-shadow(0 12px 20px rgba(7, 16, 57, 0.65));
+  --folder-logo-shadow: 0 14px 28px -4px rgba(7, 16, 57, 0.75),
+    0 0 20px rgba(46, 93, 230, 0.45), inset 0 1px 2px rgba(230, 237, 253, 0.5);
+  --folder-pocket-background: linear-gradient(
+    155deg,
+    rgba(175, 197, 248, 0.42) 0%,
+    rgba(110, 146, 242, 0.3) 46%,
+    rgba(46, 93, 230, 0.44) 85%,
+    rgba(26, 59, 176, 0.58) 100%
+  );
+}
+
+/* ============================ PALETTES ================================== */
+
+.site-shell.theme-red {
+  --brand: #e0102a;
+}
+.site-shell.theme-green {
+  --brand: #86c406;
+}
+.site-shell.theme-custom {
+  --brand: var(--custom-colour, #a855f7);
+}
+
+/* Any non-default palette regenerates the ramp and everything built on it. */
+.site-shell.theme-red,
+.site-shell.theme-green,
+.site-shell.theme-custom {
   --brand-ink: #05070f;
 
-  /* ---- 7-shade ramp, generated from --brand --------------------------- */
   --ultra-950: color-mix(in oklab, var(--brand) 15%, var(--brand-ink));
   --ultra-900: color-mix(in oklab, var(--brand) 31%, var(--brand-ink));
   --ultra-800: color-mix(in oklab, var(--brand) 54%, var(--brand-ink));
@@ -39,57 +92,6 @@
   --ultra-200: color-mix(in oklab, var(--brand) 40%, white);
   --ultra-50: color-mix(in oklab, var(--brand) 11%, white);
 
-  /* ---- semantic surfaces --------------------------------------------- */
-  --surface: color-mix(in oklab, var(--ultra-900) 62%, transparent);
-  --surface-2: color-mix(in oklab, var(--ultra-800) 40%, transparent);
-  --surface-3: color-mix(in oklab, var(--ultra-950) 72%, transparent);
-  --surface-solid: var(--ultra-950);
-
-  --line: color-mix(in srgb, var(--ultra-200) 22%, transparent);
-  --line-soft: color-mix(in srgb, var(--ultra-200) 12%, transparent);
-  --line-strong: color-mix(in srgb, var(--ultra-50) 46%, transparent);
-  --line-deep: color-mix(in srgb, var(--ultra-950) 85%, transparent);
-
-  --text: var(--ultra-50);
-  --text-muted: var(--ultra-200);
-  --text-faint: color-mix(in oklab, var(--ultra-200) 72%, transparent);
-
-  --accent: var(--ultra-600);
-  --accent-bright: var(--ultra-400);
-  --accent-wash: color-mix(in srgb, var(--ultra-600) 16%, transparent);
-  --ring: color-mix(in srgb, var(--ultra-400) 65%, transparent);
-
-  --glow-soft: 0 0 24px color-mix(in srgb, var(--ultra-600) 34%, transparent);
-  --glow-strong: 0 0 42px color-mix(in srgb, var(--ultra-600) 48%, transparent);
-  --shadow-deep: 0 24px 60px -18px color-mix(in srgb, var(--ultra-950) 92%, transparent);
-  --shadow-lift: 0 14px 34px -12px color-mix(in srgb, var(--ultra-950) 88%, transparent);
-
-  /* ---- glass ---------------------------------------------------------- */
-  --glass-filter: blur(14px) saturate(150%);
-  --glass-soft-filter: blur(8px) saturate(140%);
-  --glass-overlay-filter: blur(6px);
-  --glass-folder-filter: blur(6px) saturate(145%);
-
-  --glass-panel: linear-gradient(
-    158deg,
-    color-mix(in srgb, var(--ultra-200) 17%, transparent) 0%,
-    color-mix(in srgb, var(--ultra-800) 30%, transparent) 46%,
-    color-mix(in srgb, var(--ultra-950) 84%, transparent) 100%
-  );
-  --glass-panel-soft: linear-gradient(
-    158deg,
-    color-mix(in srgb, var(--ultra-200) 12%, transparent) 0%,
-    color-mix(in srgb, var(--ultra-900) 46%, transparent) 100%
-  );
-  --glass-edge-top: color-mix(in srgb, var(--ultra-50) 52%, transparent);
-  --glass-edge-side: color-mix(in srgb, var(--ultra-50) 26%, transparent);
-  --glass-inset: inset 0 1px 1px color-mix(in srgb, var(--ultra-50) 34%, transparent);
-
-  --accent-gradient: linear-gradient(
-    135deg,
-    var(--ultra-600) 0%,
-    var(--ultra-400) 100%
-  );
   --community-background: linear-gradient(
     145deg,
     color-mix(in srgb, var(--ultra-200) 28%, transparent) 0%,
@@ -102,8 +104,11 @@
     color-mix(in srgb, var(--ultra-400) 16%, transparent) 45%,
     color-mix(in srgb, var(--ultra-900) 72%, transparent) 100%
   );
-  --folder-shadow: drop-shadow(0 12px 20px color-mix(in srgb, var(--ultra-950) 65%, transparent));
-  --folder-logo-shadow: 0 14px 28px -4px color-mix(in srgb, var(--ultra-950) 75%, transparent),
+  --folder-shadow: drop-shadow(
+    0 12px 20px color-mix(in srgb, var(--ultra-950) 65%, transparent)
+  );
+  --folder-logo-shadow: 0 14px 28px -4px
+      color-mix(in srgb, var(--ultra-950) 75%, transparent),
     0 0 20px color-mix(in srgb, var(--ultra-600) 45%, transparent),
     inset 0 1px 2px color-mix(in srgb, var(--ultra-50) 50%, transparent);
   --folder-pocket-background: linear-gradient(
@@ -113,592 +118,78 @@
     color-mix(in srgb, var(--ultra-600) 44%, transparent) 85%,
     color-mix(in srgb, var(--ultra-800) 58%, transparent) 100%
   );
-
-  /* ---- page background ------------------------------------------------ */
-  --page-base: radial-gradient(
-      circle at 50% -10%,
-      color-mix(in oklab, var(--ultra-800) 82%, transparent) 0%,
-      color-mix(in oklab, var(--ultra-900) 78%, transparent) 34%,
-      var(--ultra-950) 76%
-    );
-  --grid-veil: linear-gradient(
-      to right,
-      color-mix(in srgb, var(--ultra-200) 7%, transparent) 1px,
-      transparent 1px
-    )
-    0 0 / 68px 68px,
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--ultra-200) 7%, transparent) 1px,
-      transparent 1px
-    )
-    0 0 / 68px 68px;
-}
-
-/* ============================ PALETTES ================================== */
-/* Setting --brand is the whole theme switch. */
-.site-shell.theme-red {
-  --brand: #e0102a;
-}
-.site-shell.theme-green {
-  --brand: #86c406;
-}
-.site-shell.theme-custom {
-  --brand: var(--custom-colour, #a855f7);
 }
 
 /* ============================== BASE ==================================== */
 
-* {
-  scrollbar-color: var(--ultra-800) transparent;
-}
-
 body {
   background-color: var(--ultra-950);
-  color: var(--text);
+  color: var(--ultra-50);
   -webkit-tap-highlight-color: transparent;
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
-  font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+}
+
+.site-shell {
+  background: radial-gradient(
+    circle at 50% 0%,
+    var(--ultra-800) 0%,
+    var(--ultra-900) 32%,
+    var(--ultra-950) 74%
+  );
 }
 
 .font-display {
-  letter-spacing: -0.022em;
-  font-family: "Syne", "Inter", system-ui, sans-serif;
-}
-
-/* ========================= AMBIENT BACKDROP ============================= */
-
-.site-shell {
-  background-color: var(--ultra-950);
-  background-image: var(--page-base);
-  background-attachment: fixed;
-  isolation: isolate;
-}
-
-/* Fine engineering grid + vignette, drawn once for the whole app. */
-.site-shell::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: var(--grid-veil);
-  opacity: 0.5;
-  mask-image: radial-gradient(circle at 50% 22%, black 0%, transparent 72%);
-  -webkit-mask-image: radial-gradient(circle at 50% 22%, black 0%, transparent 72%);
-}
-
-.site-shell::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at 50% 50%,
-    transparent 42%,
-    color-mix(in srgb, var(--ultra-950) 78%, transparent) 100%
-  );
-}
-
-/* Drifting aurora ribbons — three of them, all brand-derived. */
-.aurora {
-  position: fixed;
-  border-radius: 9999px;
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(90px);
-  will-change: transform, opacity;
-}
-
-.aurora-1 {
-  top: -14%;
-  left: 50%;
-  width: min(880px, 92vw);
-  height: 380px;
-  translate: -50% 0;
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in srgb, var(--ultra-600) 52%, transparent) 0%,
-    color-mix(in srgb, var(--ultra-800) 26%, transparent) 52%,
-    transparent 78%
-  );
-  animation: auroraDrift 26s ease-in-out infinite;
-}
-
-.aurora-2 {
-  bottom: -18%;
-  left: 8%;
-  width: min(620px, 78vw);
-  height: 420px;
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in srgb, var(--ultra-400) 34%, transparent) 0%,
-    transparent 72%
-  );
-  animation: auroraDrift 34s ease-in-out infinite reverse;
-}
-
-.aurora-3 {
-  top: 32%;
-  right: -12%;
-  width: min(560px, 70vw);
-  height: 560px;
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in srgb, var(--ultra-800) 46%, transparent) 0%,
-    transparent 70%
-  );
-  animation: auroraFloat 42s ease-in-out infinite;
-}
-
-@keyframes auroraDrift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.85;
-  }
-  33% {
-    transform: translate3d(-6%, 4%, 0) scale(1.09);
-    opacity: 1;
-  }
-  66% {
-    transform: translate3d(5%, -3%, 0) scale(0.96);
-    opacity: 0.78;
-  }
-}
-
-@keyframes auroraFloat {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-  50% {
-    transform: translate3d(-8%, -6%, 0) rotate(14deg);
-  }
-}
-
-/* ============================== PANELS ================================== */
-
-.panel {
-  position: relative;
-  border-radius: 26px;
-  background-image: var(--glass-panel);
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
-  border-top: 1.5px solid var(--glass-edge-top);
-  border-left: 1px solid var(--glass-edge-side);
-  border-right: 1px solid color-mix(in srgb, var(--ultra-200) 22%, transparent);
-  border-bottom: 1.5px solid var(--line-deep);
-  box-shadow: var(--shadow-deep), var(--glass-inset);
-}
-
-.panel-soft {
-  background-image: var(--glass-panel-soft);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-lift), var(--glass-inset);
-}
-
-.panel-flat {
-  background-color: var(--surface-3);
-  border: 1px solid var(--line);
-}
-
-/* Specular sweep across the top edge of a panel. */
-.panel-sheen::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(
-    112deg,
-    transparent 22%,
-    color-mix(in srgb, var(--ultra-50) 9%, transparent) 44%,
-    transparent 62%
-  );
-  opacity: 0;
-  transition: opacity 320ms ease;
-}
-
-.panel-sheen:hover::after {
-  opacity: 1;
-}
-
-/* Hairline separator */
-.divider {
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--line) 18%,
-    var(--line) 82%,
-    transparent
-  );
-}
-
-/* ============================== BUTTONS ================================= */
-
-.btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 16px;
+  letter-spacing: -0.02em;
   font-family: "Syne", "Inter", sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  overflow: hidden;
-  transition: transform 160ms ease, box-shadow 200ms ease, background-color 160ms ease,
-    border-color 160ms ease, color 160ms ease, filter 200ms ease;
 }
 
-.btn:active {
-  transform: translateY(1px) scale(0.99);
+.folder-backplate {
+  filter: var(--folder-shadow);
 }
 
-.btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
+.folder-pocket {
+  z-index: 1;
 }
-
-.btn-primary {
-  color: var(--ultra-50);
-  background-image: var(--accent-gradient);
-  border: 1px solid color-mix(in srgb, var(--ultra-50) 48%, transparent);
-  box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--ultra-600) 78%, transparent),
-    var(--glass-inset);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-1.5px);
-  filter: brightness(1.08);
-  box-shadow: 0 18px 38px -12px color-mix(in srgb, var(--ultra-600) 88%, transparent),
-    var(--glass-inset);
-}
-
-/* Light sweep on hover */
-.btn-primary::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -60%;
-  width: 45%;
-  background: linear-gradient(
-    100deg,
-    transparent,
-    color-mix(in srgb, white 55%, transparent),
-    transparent
-  );
-  transform: skewX(-18deg);
-  transition: left 520ms ease;
-}
-
-.btn-primary:hover:not(:disabled)::before {
-  left: 120%;
-}
-
-.btn-glass {
-  color: var(--text);
-  background-image: linear-gradient(
-    140deg,
-    color-mix(in srgb, var(--ultra-200) 24%, transparent),
-    color-mix(in srgb, var(--ultra-600) 34%, transparent)
-  );
-  border: 1px solid color-mix(in srgb, var(--ultra-50) 40%, transparent);
-  box-shadow: var(--shadow-lift), var(--glass-inset);
-}
-
-.btn-glass:hover:not(:disabled) {
-  transform: translateY(-1.5px);
-  background-image: linear-gradient(
-    140deg,
-    color-mix(in srgb, var(--ultra-200) 34%, transparent),
-    color-mix(in srgb, var(--ultra-600) 48%, transparent)
-  );
-}
-
-.btn-ghost {
-  color: var(--text-muted);
-  background-color: color-mix(in srgb, var(--ultra-950) 55%, transparent);
-  border: 1px solid var(--line);
-}
-
-.btn-ghost:hover:not(:disabled) {
-  color: var(--text);
-  background-color: color-mix(in srgb, var(--ultra-400) 18%, transparent);
-  border-color: color-mix(in srgb, var(--ultra-400) 45%, transparent);
-}
-
-.btn-danger {
-  color: #ffe4e9;
-  background-color: color-mix(in srgb, #f43f5e 22%, transparent);
-  border: 1px solid color-mix(in srgb, #f43f5e 45%, transparent);
-}
-
-.btn-danger:hover:not(:disabled) {
-  background-color: color-mix(in srgb, #f43f5e 34%, transparent);
-  color: #fff;
-}
-
-.btn-icon {
-  padding: 0.6rem;
-  border-radius: 14px;
-}
-
-/* ============================== FIELDS ================================== */
-
-.field {
-  width: 100%;
-  border-radius: 14px;
-  padding: 0.625rem 0.9rem;
-  font-size: 0.875rem;
-  color: var(--text);
-  background-color: color-mix(in srgb, var(--ultra-950) 74%, transparent);
-  border: 1px solid var(--line);
-  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--ultra-950) 60%, transparent);
-  transition: border-color 160ms ease, box-shadow 200ms ease, background-color 160ms ease;
-}
-
-.field::placeholder {
-  color: color-mix(in oklab, var(--ultra-200) 58%, transparent);
-}
-
-.field:hover {
-  border-color: color-mix(in srgb, var(--ultra-200) 34%, transparent);
-}
-
-.field:focus {
-  outline: none;
-  border-color: color-mix(in srgb, var(--ultra-400) 72%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ultra-600) 26%, transparent),
-    inset 0 1px 2px color-mix(in srgb, var(--ultra-950) 60%, transparent);
-  background-color: color-mix(in srgb, var(--ultra-950) 86%, transparent);
-}
-
-.label {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.eyebrow {
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--text-muted);
-}
-
-/* =============================== CHIPS ================================== */
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  border-radius: 9999px;
-  padding: 0.2rem 0.6rem;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text);
-  background-color: color-mix(in srgb, var(--ultra-600) 34%, transparent);
-  border: 1px solid color-mix(in srgb, var(--ultra-50) 34%, transparent);
-}
-
-.chip-quiet {
-  background-color: color-mix(in srgb, var(--ultra-950) 58%, transparent);
-  border-color: var(--line);
-  color: var(--text-muted);
-}
-
-.badge-count {
-  min-width: 1.35rem;
-  height: 1.35rem;
-  padding: 0 0.35rem;
-  border-radius: 9999px;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--ultra-950);
-  background-image: linear-gradient(135deg, var(--ultra-50), var(--ultra-200));
-  box-shadow: 0 0 14px color-mix(in srgb, var(--ultra-400) 62%, transparent);
-}
-
-/* ============================ NAVIGATION ================================ */
-
-.nav-item {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0.85rem;
-  border-radius: 18px;
-  text-align: left;
-  color: var(--text-muted);
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), color 160ms ease,
-    background-color 200ms ease, border-color 200ms ease, box-shadow 240ms ease;
-  overflow: hidden;
-}
-
-.nav-item::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 18%;
-  bottom: 18%;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--accent-gradient);
-  opacity: 0;
-  transform: scaleY(0.4);
-  transition: opacity 200ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.nav-item:hover {
-  color: var(--text);
-  background-color: color-mix(in srgb, var(--ultra-400) 12%, transparent);
-  border-color: var(--line-soft);
-  transform: translateX(2px);
-}
-
-.nav-item:hover::before {
-  opacity: 0.6;
-  transform: scaleY(0.7);
-}
-
-.nav-item-active,
-.nav-item-active:hover {
-  color: var(--text);
-  background-image: linear-gradient(
-    120deg,
-    color-mix(in srgb, var(--ultra-600) 78%, transparent) 0%,
-    color-mix(in srgb, var(--ultra-400) 42%, transparent) 100%
-  );
-  border-color: color-mix(in srgb, var(--ultra-50) 46%, transparent);
-  box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--ultra-600) 88%, transparent),
-    var(--glass-inset);
-  transform: none;
-}
-
-.nav-item-active::before {
-  opacity: 1;
-  transform: scaleY(1);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--ultra-50) 70%, transparent);
-}
-
-.nav-icon {
-  display: grid;
-  place-items: center;
-  width: 2.35rem;
-  height: 2.35rem;
-  flex-shrink: 0;
-  border-radius: 14px;
-  color: var(--text);
-  background-color: color-mix(in srgb, var(--ultra-900) 62%, transparent);
-  border: 1px solid color-mix(in srgb, var(--ultra-50) 26%, transparent);
-  transition: box-shadow 240ms ease, background-color 200ms ease, transform 240ms ease;
-}
-
-.nav-item-active .nav-icon {
-  background-color: color-mix(in srgb, var(--ultra-950) 46%, transparent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--ultra-400) 58%, transparent),
-    inset 0 1px 1px color-mix(in srgb, var(--ultra-50) 40%, transparent);
-}
-
-.nav-item:hover .nav-icon {
-  transform: scale(1.06) rotate(-3deg);
-}
-
-/* Rotating conic ring around the brand mark */
-.brand-ring {
-  position: relative;
-  display: grid;
-  place-items: center;
-  border-radius: 20px;
-}
-
-.brand-ring::before {
-  content: "";
-  position: absolute;
-  inset: -3px;
-  border-radius: 22px;
-  padding: 2px;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    color-mix(in srgb, var(--ultra-400) 92%, transparent) 70deg,
-    color-mix(in srgb, var(--ultra-50) 96%, transparent) 110deg,
-    transparent 190deg,
-    transparent 360deg
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  animation: brandSpin 6.5s linear infinite;
-  opacity: 0.9;
-}
-
-@keyframes brandSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ============================== TEXT ==================================== */
-
-.mindspark-gradient-text {
-  background: linear-gradient(
-    110deg,
-    var(--ultra-50) 0%,
-    var(--ultra-200) 22%,
-    var(--ultra-400) 48%,
-    var(--ultra-600) 72%,
-    var(--ultra-50) 100%
-  );
-  background-size: 220% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: gradientPan 9s linear infinite;
-}
-
-@keyframes gradientPan {
-  to {
-    background-position: 220% center;
-  }
-}
-
-.text-glow {
-  text-shadow: 0 0 22px color-mix(in srgb, var(--ultra-400) 55%, transparent);
-}
-
-/* ============================ ANIMATION ================================= */
 
 .transition-ui {
-  transition-property: transform, translate, scale, rotate, opacity, background-color,
-    color, border-color, box-shadow, filter;
-  transition-duration: 180ms;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-property: transform, translate, scale, rotate, opacity,
+    background-color, color, border-color;
+  transition-duration: 160ms;
+  transition-timing-function: ease-out;
+}
+
+.drawer-overlay {
+  transition: opacity 160ms ease-out;
+}
+
+.drawer-panel {
+  transition: transform 160ms ease-out, translate 160ms ease-out,
+    scale 160ms ease-out;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ultra-950);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ultra-800);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ultra-600);
 }
 
 @keyframes surfaceEnter {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.994);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -707,46 +198,7 @@ body {
 }
 
 .animate-pop-in {
-  animation: surfaceEnter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* Staggered entrance for the cards inside a module */
-.stagger > * {
-  animation: surfaceEnter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.stagger > *:nth-child(1) {
-  animation-delay: 20ms;
-}
-.stagger > *:nth-child(2) {
-  animation-delay: 80ms;
-}
-.stagger > *:nth-child(3) {
-  animation-delay: 140ms;
-}
-.stagger > *:nth-child(4) {
-  animation-delay: 200ms;
-}
-.stagger > *:nth-child(5) {
-  animation-delay: 260ms;
-}
-.stagger > *:nth-child(6) {
-  animation-delay: 320ms;
-}
-
-@keyframes livePulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 62%, transparent);
-    opacity: 1;
-  }
-  70% {
-    box-shadow: 0 0 0 7px color-mix(in srgb, var(--success) 0%, transparent);
-    opacity: 0.85;
-  }
-}
-
-.live-dot {
-  animation: livePulse 2.4s ease-out infinite;
+  animation: surfaceEnter 160ms ease-out;
 }
 
 @keyframes bellRing {
@@ -779,60 +231,23 @@ body {
 
 .animate-bell-ring {
   transform-origin: bottom;
-  animation: bellRing 2.4s ease-in-out infinite;
+  animation: bellRing 2s ease-in-out infinite;
 }
 
-@keyframes shimmer {
-  from {
-    background-position: -180% 0;
-  }
-  to {
-    background-position: 180% 0;
-  }
-}
-
-.skeleton {
-  background-image: linear-gradient(
-    100deg,
-    color-mix(in srgb, var(--ultra-800) 34%, transparent) 20%,
-    color-mix(in srgb, var(--ultra-400) 22%, transparent) 42%,
-    color-mix(in srgb, var(--ultra-800) 34%, transparent) 64%
+.mindspark-gradient-text {
+  background: linear-gradient(
+    110deg,
+    var(--ultra-50) 0%,
+    var(--ultra-200) 22%,
+    var(--ultra-400) 48%,
+    var(--ultra-600) 72%,
+    var(--ultra-50) 100%
   );
-  background-size: 220% 100%;
-  animation: shimmer 1.5s linear infinite;
-  border: 1px solid var(--line-soft);
-}
-
-.drawer-overlay {
-  transition: opacity 180ms ease-out;
-}
-
-.drawer-panel {
-  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    scale 220ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* ============================ SCROLLBARS ================================ */
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--ultra-950) 70%, transparent);
-}
-
-::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--ultra-800) 88%, transparent);
-  border-radius: 9999px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--ultra-600) 92%, transparent);
-  background-clip: padding-box;
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -842,16 +257,6 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-/* ============================= UTILITIES ================================ */
-
-.folder-backplate {
-  filter: var(--folder-shadow);
-}
-
-.folder-pocket {
-  z-index: 1;
 }
 
 .seo-hidden-text {
@@ -866,32 +271,43 @@ body {
   overflow: hidden;
 }
 
-/* Legacy hook: the palette picker used to be exempted from hue-rotate.
-   Themes are token-driven now, so it must NOT be filtered. */
-.palette-switch {
-  filter: none;
-}
-
 /* ============================== MOBILE ================================== */
-
-@media (max-width: 1023px) {
-  .aurora {
-    filter: blur(70px);
-  }
-  .aurora-3 {
-    display: none;
-  }
-}
 
 @media (max-width: 767px), (pointer: coarse) {
   :root {
-    --glass-filter: blur(6px) saturate(135%);
-    --glass-soft-filter: none;
+    --notification-card-background: linear-gradient(
+      155deg,
+      #38589f 0%,
+      #233f87 45%,
+      #101f5c 100%
+    );
+    --community-background: linear-gradient(
+      145deg,
+      #5377d8 0%,
+      #294fb9 45%,
+      #0f2270 100%
+    );
+    --glass-filter: none;
     --glass-overlay-filter: none;
     --glass-folder-filter: none;
+    --glass-soft-filter: none;
     --folder-shadow: none;
-    --shadow-deep: 0 14px 30px -14px color-mix(in srgb, var(--ultra-950) 90%, transparent);
-    /* Solid surfaces read better than translucent glass on small screens. */
+    --folder-logo-shadow: 0 5px 12px -3px rgba(7, 16, 57, 0.65),
+      inset 0 1px 2px rgba(230, 237, 253, 0.5);
+    --folder-pocket-background: linear-gradient(
+      155deg,
+      rgba(152, 181, 249, 0.94) 0%,
+      rgba(93, 133, 236, 0.96) 36%,
+      rgba(51, 91, 210, 0.97) 70%,
+      rgba(26, 59, 176, 0.98) 100%
+    );
+  }
+
+  /* Solid surfaces read better than translucent glass on small screens —
+     re-derived from the ramp so themed palettes keep the same treatment. */
+  .site-shell.theme-red,
+  .site-shell.theme-green,
+  .site-shell.theme-custom {
     --notification-card-background: linear-gradient(
       155deg,
       color-mix(in oklab, var(--ultra-400) 62%, var(--ultra-900)) 0%,
@@ -904,7 +320,13 @@ body {
       color-mix(in oklab, var(--ultra-600) 62%, var(--ultra-950)) 45%,
       var(--ultra-900) 100%
     );
-    --folder-logo-shadow: 0 5px 12px -3px color-mix(in srgb, var(--ultra-950) 65%, transparent),
+    --glass-filter: none;
+    --glass-overlay-filter: none;
+    --glass-folder-filter: none;
+    --glass-soft-filter: none;
+    --folder-shadow: none;
+    --folder-logo-shadow: 0 5px 12px -3px
+        color-mix(in srgb, var(--ultra-950) 65%, transparent),
       inset 0 1px 2px color-mix(in srgb, var(--ultra-50) 50%, transparent);
     --folder-pocket-background: linear-gradient(
       155deg,
@@ -915,20 +337,9 @@ body {
     );
   }
 
-  .site-shell::before {
-    opacity: 0.28;
-  }
-
   .animate-pop-in,
-  .stagger > *,
-  .animate-bell-ring,
-  .brand-ring::before,
-  .mindspark-gradient-text {
+  .animate-bell-ring {
     animation: none;
-  }
-
-  .stagger > *,
-  .animate-pop-in {
     opacity: 1;
   }
 
@@ -939,8 +350,7 @@ body {
     transition-duration: 120ms;
   }
 
-  .desktop-sheen,
-  .panel-sheen::after {
+  .desktop-sheen {
     display: none;
   }
 

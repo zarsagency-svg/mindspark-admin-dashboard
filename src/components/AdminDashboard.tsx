@@ -62,29 +62,6 @@ interface AdminDashboardProps {
 
 type AdminSection = "broadcasts" | "inbox" | "platforms" | "appearance";
 
-/** Header copy for each module. */
-const SECTION_COPY: Record<
-  AdminSection,
-  { title: string; sub: string }
-> = {
-  broadcasts: {
-    title: "Announcement Broadcast Studio",
-    sub: "Publish straight to the notification feed on the live website",
-  },
-  inbox: {
-    title: "Visitor Chats",
-    sub: "Two-way WhatsApp-style threads with Google-signed-in visitors",
-  },
-  platforms: {
-    title: "3D Folder Platform Architect",
-    sub: "Add, edit and reorder the platform folders shown to students",
-  },
-  appearance: {
-    title: "Colour & Glass Style Studio",
-    sub: "One colour rethemes the entire console — surfaces, glass, glows and icons",
-  },
-};
-
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   adminEmail = "",
   onSignOut,
@@ -181,8 +158,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, []);
 
   // The whole theme hangs off one variable: globals.css derives the 7-shade
-  // ramp, every surface, border and glow from --brand, and the palette classes
-  // below simply re-point --brand at the chosen colour.
+  // ramp and every surface, border and glow from --brand, and the palette
+  // classes simply re-point --brand at the chosen colour.
   const customStyle = {
     "--custom-colour": settings.customColour,
   } as CSSProperties;
@@ -408,16 +385,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  /** Discrete changes (palette mode, card style): apply + save immediately. */
+  /** Discrete changes (palette mode, card style): apply and save immediately. */
   const handleSaveSettings = (nextSettings: SiteSettingsData) => {
     setSettings(nextSettings);
     void persistSettings(nextSettings);
   };
 
   /**
-   * Continuous changes (dragging the colour picker): apply to the theme on the
-   * very first frame so the whole console recolours live, then debounce the
-   * write to Supabase so dragging does not fire a request per pixel.
+   * Continuous changes (dragging the colour picker): recolour on the very first
+   * frame, then debounce the write so dragging does not fire a request per
+   * pixel.
    */
   const handleThemeDrag = (nextSettings: SiteSettingsData) => {
     setSettings(nextSettings);
@@ -469,25 +446,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       } min-h-[100dvh] relative flex flex-col lg:flex-row text-ink pb-24 lg:pb-8 overflow-x-hidden`}
       style={customStyle}
     >
-      {/* Ambient aurora — three brand-derived ribbons drifting behind the UI */}
-      <div aria-hidden="true" className="aurora aurora-1" />
-      <div aria-hidden="true" className="aurora aurora-2" />
-      <div aria-hidden="true" className="aurora aurora-3" />
+      {/* Ambient Ultramarine Glow Orbs */}
+      <div
+        aria-hidden="true"
+        className="ambient-glow fixed top-[-12%] left-1/2 -translate-x-1/2 w-[420px] sm:w-[760px] h-[340px] rounded-full blur-[130px] pointer-events-none z-0"
+        style={{ background: "color-mix(in srgb, var(--ultra-600) 32%, transparent)" }}
+      />
+      <div
+        aria-hidden="true"
+        className="ambient-glow fixed bottom-[-15%] left-1/4 w-[320px] sm:w-[520px] h-[320px] rounded-full blur-[140px] pointer-events-none z-0"
+        style={{ background: "color-mix(in srgb, var(--ultra-400) 18%, transparent)" }}
+      />
 
       {/* Toast Feedback Banner */}
       {toastMessage && (
         <div
-          role="status"
-          className="panel fixed top-4 right-4 z-[90] flex items-center gap-2.5 px-4 py-3 text-xs sm:text-sm font-display font-bold text-ink animate-pop-in"
+          className="fixed top-4 right-4 z-[90] flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs sm:text-sm font-display font-bold text-ink animate-pop-in"
           style={{
-            backgroundImage:
-              "linear-gradient(135deg, color-mix(in srgb, var(--ultra-600) 92%, transparent) 0%, color-mix(in srgb, var(--ultra-900) 96%, transparent) 100%)",
-            boxShadow: "var(--shadow-deep), var(--glow-soft)",
+            background:
+              "linear-gradient(135deg, color-mix(in srgb, var(--ultra-600) 95%, transparent) 0%, color-mix(in srgb, var(--ultra-900) 98%, transparent) 100%)",
+            border: "1.5px solid color-mix(in srgb, var(--ultra-50) 65%, transparent)",
+            boxShadow: "0 16px 35px color-mix(in srgb, var(--ultra-950) 85%, transparent)",
           }}
         >
-          <span className="grid place-items-center w-6 h-6 rounded-full bg-ink/20 border border-ink/40">
-            <CheckCircle2 className="w-3.5 h-3.5 text-ink shrink-0" />
-          </span>
+          <CheckCircle2 className="w-4 h-4 text-ink shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -495,37 +477,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* ============================================================
           DESKTOP LEFT 3D GLASS COMMAND SIDEBAR
       ============================================================ */}
-      <aside className="panel panel-sheen hidden lg:flex flex-col w-[19rem] shrink-0 m-4 p-5 relative z-20 justify-between self-start sticky top-4 min-h-[calc(100dvh-2rem)]">
+      <aside
+        className="hidden lg:flex flex-col w-72 shrink-0 m-4 rounded-[28px] p-5 relative z-20 justify-between self-start sticky top-4 min-h-[calc(100dvh-2rem)]"
+        style={{
+          background:
+            "linear-gradient(165deg, color-mix(in srgb, var(--ultra-200) 18%, transparent) 0%, color-mix(in srgb, var(--ultra-800) 34%, transparent) 45%, color-mix(in srgb, var(--ultra-950) 88%, transparent) 100%)",
+          backdropFilter: "var(--glass-filter)",
+          borderTop: "1.5px solid color-mix(in srgb, var(--ultra-50) 55%, transparent)",
+          borderLeft: "1px solid color-mix(in srgb, var(--ultra-50) 35%, transparent)",
+          borderRight: "1px solid color-mix(in srgb, var(--ultra-200) 25%, transparent)",
+          borderBottom: "1.5px solid color-mix(in srgb, var(--ultra-950) 85%, transparent)",
+          boxShadow:
+            "0 20px 50px -12px color-mix(in srgb, var(--ultra-950) 85%, transparent), inset 0 1.5px 2px color-mix(in srgb, var(--ultra-50) 40%, transparent)",
+        }}
+      >
         <div className="space-y-6">
           {/* Brand Identity */}
-          <div className="flex items-center gap-3.5 pb-5">
-            <span className="brand-ring shrink-0">
-              <span
-                className="grid place-items-center w-12 h-12 rounded-[18px]"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(140deg, color-mix(in srgb, var(--ultra-400) 78%, transparent), color-mix(in srgb, var(--ultra-800) 88%, transparent))",
-                  boxShadow: "var(--glow-soft), var(--glass-inset)",
-                }}
-              >
-                <GlassShieldIcon className="w-8 h-8" />
-              </span>
-            </span>
-            <div className="min-w-0">
+          <div className="flex items-center gap-3 pb-4 border-b border-mist/20">
+            <GlassShieldIcon className="w-11 h-11 shrink-0" />
+            <div>
               <div className="flex items-center gap-1.5">
-                <span className="eyebrow">Command Studio</span>
-                <span className="live-dot w-1.5 h-1.5 rounded-full bg-success" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-mist">
+                  Command Studio
+                </span>
+                <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981]" />
               </div>
-              <h1 className="mindspark-gradient-text font-display font-extrabold text-xl tracking-tight leading-tight">
+              <h1 className="font-display font-extrabold text-lg tracking-tight text-ink">
                 MIND SPARK
               </h1>
-              <p className="text-[11px] text-mist/85 truncate">
-                Super Admin · Google verified
-              </p>
+              <p className="text-[11px] text-mist">Super Admin · Google verified</p>
             </div>
           </div>
-
-          <div className="divider mb-5" />
 
           {/* Navigation Menu */}
           <nav className="space-y-2" aria-label="Admin Modules">
@@ -566,28 +548,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => setActiveSection(item.id)}
-                  aria-current={active ? "page" : undefined}
-                  className={`nav-item ${active ? "nav-item-active" : ""}`}
+                  className={`w-full flex items-center justify-between gap-3 p-3.5 rounded-2xl text-left transition-ui cursor-pointer ${
+                    active
+                      ? "text-ink scale-[1.01]"
+                      : "text-mist hover:text-ink hover:bg-white/5"
+                  }`}
+                  style={
+                    active
+                      ? {
+                          background:
+                            "linear-gradient(135deg, color-mix(in srgb, var(--ultra-600) 85%, transparent) 0%, color-mix(in srgb, var(--ultra-400) 55%, transparent) 100%)",
+                          border: "1px solid color-mix(in srgb, var(--ultra-50) 60%, transparent)",
+                          boxShadow: "0 10px 24px -6px color-mix(in srgb, var(--ultra-600) 60%, transparent)",
+                        }
+                      : undefined
+                  }
                 >
-                  <span className="nav-icon">
-                    <Icon className="w-4 h-4" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-display font-bold text-sm leading-tight truncate">
-                      {item.label}
-                    </span>
-                    <span className="block text-[11px] text-mist/80 truncate mt-0.5">
-                      {item.sub}
-                    </span>
-                  </span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{
+                        background: active
+                          ? "color-mix(in srgb, var(--ultra-950) 45%, transparent)"
+                          : "color-mix(in srgb, var(--ultra-900) 55%, transparent)",
+                        border: "1px solid color-mix(in srgb, var(--ultra-50) 30%, transparent)",
+                      }}
+                    >
+                      <Icon className="w-4 h-4 text-ink" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-display font-bold text-sm leading-tight truncate">
+                        {item.label}
+                      </p>
+                      <p className="text-[11px] text-mist/85 truncate mt-0.5">
+                        {item.sub}
+                      </p>
+                    </div>
+                  </div>
 
-                  {typeof item.badge === "number" && item.badge > 0 && (
+                  {typeof item.badge === "number" && (
                     <span
-                      className={
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
                         item.highlightBadge
-                          ? "badge-count"
-                          : "badge-count !bg-none !bg-abyss/70 !text-ink !shadow-none border border-mist/30"
-                      }
+                          ? "bg-ink text-abyss"
+                          : "bg-abyss/55 text-ink"
+                      }`}
                     >
                       {item.badge}
                     </span>
@@ -599,33 +604,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         {/* Bottom Actions */}
-        <div className="space-y-2.5">
-          <div className="divider mb-3" />
-
+        <div className="space-y-2.5 pt-4 border-t border-mist/20">
           {adminEmail && (
-            <div className="panel-flat rounded-2xl px-3 py-2.5 mb-1">
-              <p className="eyebrow mb-1">Signed in</p>
-              <p className="font-display font-bold text-xs text-ink break-all leading-snug">
-                {adminEmail}
-              </p>
-              <p className="mt-1 flex items-center gap-1.5 text-[10px] text-mist/80">
-                <ShieldCheck className="w-3 h-3 text-glow shrink-0" />
-                Allowlisted in Supabase
-              </p>
-            </div>
+            <p className="px-1 text-[11px] leading-relaxed text-mist break-all">
+              Signed in as
+              <br />
+              <span className="font-display font-bold text-ink">{adminEmail}</span>
+            </p>
           )}
 
           <a
             href={PUBLIC_SITE_URL}
             target="_blank"
             rel="noreferrer"
-            className="btn btn-glass w-full py-3 px-4 text-xs"
+            className="w-full py-3 px-4 rounded-2xl font-display font-bold text-xs text-ink flex items-center justify-center gap-2 transition-ui hover:-translate-y-0.5 cursor-pointer"
+            style={{
+              background:
+                "linear-gradient(135deg, color-mix(in srgb, var(--ultra-200) 28%, transparent) 0%, color-mix(in srgb, var(--ultra-600) 45%, transparent) 100%)",
+              border: "1px solid color-mix(in srgb, var(--ultra-50) 50%, transparent)",
+            }}
           >
             <Eye className="w-4 h-4" />
-            <span>View Live Website</span>
+            <span>View Live Student Website</span>
           </a>
 
-          <button type="button" onClick={() => onSignOut?.()} className="btn btn-ghost w-full py-2.5 px-4 text-xs">
+          <button
+            type="button"
+            onClick={() => onSignOut?.()}
+            className="w-full py-2.5 px-4 rounded-2xl font-display font-semibold text-xs text-mist hover:text-ink hover:bg-white/10 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign out</span>
           </button>
@@ -636,64 +643,69 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           MAIN WORKSPACE AREA
       ============================================================ */}
       <div className="flex-1 min-w-0 px-4 sm:px-6 pt-4 lg:pt-5 relative z-10 max-w-6xl mx-auto w-full">
-        {/* ============================================================
-            STICKY GLASS COMMAND BAR
-        ============================================================ */}
-        <header className="panel panel-sheen mb-6 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <span
-              className="grid place-items-center w-12 h-12 shrink-0 rounded-[18px]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(140deg, color-mix(in srgb, var(--ultra-600) 88%, transparent), color-mix(in srgb, var(--ultra-900) 92%, transparent))",
-                border: "1px solid color-mix(in srgb, var(--ultra-50) 34%, transparent)",
-                boxShadow: "var(--glow-soft), var(--glass-inset)",
-              }}
-            >
-              <GlassEnvelopeNotificationIcon
-                className="w-8 h-8"
-                hasUnread={chatUnread > 0}
-              />
-            </span>
-
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="eyebrow">Mind Spark Ecosystem</span>
-                <span className="chip !py-0.5 !text-[9px]">
-                  <span className="live-dot w-1.5 h-1.5 rounded-full bg-success" />
+        {/* Top Mobile & Desktop Glass Header */}
+        <header
+          className="rounded-[24px] p-4 sm:p-5 mb-6 flex flex-wrap items-center justify-between gap-3"
+          style={{
+            background:
+              "linear-gradient(145deg, color-mix(in srgb, var(--ultra-200) 22%, transparent) 0%, color-mix(in srgb, var(--ultra-800) 38%, transparent) 55%, color-mix(in srgb, var(--ultra-900) 82%, transparent) 100%)",
+            backdropFilter: "var(--glass-filter)",
+            borderTop: "1.5px solid color-mix(in srgb, var(--ultra-50) 58%, transparent)",
+            borderLeft: "1px solid color-mix(in srgb, var(--ultra-50) 35%, transparent)",
+            borderRight: "1px solid color-mix(in srgb, var(--ultra-200) 25%, transparent)",
+            borderBottom: "1.5px solid color-mix(in srgb, var(--ultra-950) 85%, transparent)",
+            boxShadow: "0 16px 36px -10px color-mix(in srgb, var(--ultra-950) 80%, transparent)",
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <GlassEnvelopeNotificationIcon
+              className="w-11 h-11 shrink-0"
+              hasUnread={chatUnread > 0}
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-mist">
+                  MIND SPARK ECOSYSTEM
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-accent/55 border border-ink/40">
                   Admin Live
                 </span>
-                {chatUnread > 0 && (
-                  <span className="chip chip-quiet !py-0.5 !text-[9px]">
-                    {chatUnread} new {chatUnread === 1 ? "message" : "messages"}
-                  </span>
-                )}
               </div>
-
-              <h2 className="font-display font-extrabold text-xl sm:text-[1.7rem] leading-tight tracking-tight text-ink text-glow truncate">
-                {SECTION_COPY[activeSection].title}
+              <h2 className="font-display font-extrabold text-lg sm:text-2xl text-ink tracking-tight">
+                {activeSection === "broadcasts" &&
+                  "Announcement Broadcast Studio"}
+                {activeSection === "inbox" &&
+                  "Google-Verified Student Direct Inbox"}
+                {activeSection === "platforms" &&
+                  "3D Folder Platform Architect"}
+                {activeSection === "appearance" &&
+                  "Colour Palette & Glass Style Studio"}
               </h2>
-              <p className="text-[11.5px] sm:text-xs text-mist/85 mt-0.5 truncate">
-                {SECTION_COPY[activeSection].sub}
-              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={fetchAllAdminData}
-              aria-label="Refresh dashboard data"
-              className="btn btn-ghost btn-icon"
+              aria-label="Refresh Dashboard Data"
+              className="p-2.5 rounded-2xl text-ink hover:bg-white/10 border border-mist/35 cursor-pointer"
             >
-              <RefreshCw className={`w-4 h-4 ${isLoadingData ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${isLoadingData ? "animate-spin" : ""}`}
+              />
             </button>
 
             <a
               href={PUBLIC_SITE_URL}
               target="_blank"
               rel="noreferrer"
-              className="btn btn-primary px-3.5 py-2.5 text-xs"
+              className="px-3.5 py-2.5 rounded-2xl font-display font-bold text-xs text-ink flex items-center gap-1.5 cursor-pointer"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--ultra-600) 0%, var(--ultra-400) 100%)",
+                border: "1px solid color-mix(in srgb, var(--ultra-50) 55%, transparent)",
+              }}
             >
               <Eye className="w-3.5 h-3.5" />
               <span>Live Website</span>
@@ -703,7 +715,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               type="button"
               onClick={() => onSignOut?.()}
               aria-label="Sign out"
-              className="btn btn-ghost btn-icon lg:hidden"
+              className="lg:hidden p-2.5 rounded-2xl text-mist hover:text-white border border-mist/30 cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -716,7 +728,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ============================================================ */}
         {activeSection === "broadcasts" && (
           <div className="space-y-6 animate-pop-in">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 stagger">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Left 7 Cols: Announcement Composer */}
               <form
                 onSubmit={handlePublishAnnouncement}
@@ -824,7 +836,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="submit"
                   disabled={isPublishingBc}
-                  className="btn btn-primary w-full py-3.5 px-5 text-sm"
+                  className="w-full py-3.5 px-5 rounded-2xl font-display font-bold text-sm text-ink flex items-center justify-center gap-2 transition-ui hover:-translate-y-0.5 cursor-pointer"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, var(--ultra-600) 0%, var(--ultra-400) 100%)",
+                    border: "1px solid color-mix(in srgb, var(--ultra-50) 65%, transparent)",
+                    boxShadow: "0 10px 25px color-mix(in srgb, var(--ultra-600) 55%, transparent)",
+                  }}
                 >
                   <Send className="w-4 h-4" />
                   <span>
@@ -1021,7 +1039,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ============================================================ */}
         {activeSection === "platforms" && (
           <div className="space-y-6 animate-pop-in">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 stagger">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Left 7 Cols: Add / Edit Platform Form */}
               <form
                 onSubmit={handleSavePlatform}
@@ -1259,7 +1277,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   type="submit"
                   disabled={isSavingPlatform}
-                  className="btn btn-primary w-full py-3.5 px-5 text-sm"
+                  className="w-full py-3.5 px-5 rounded-2xl font-display font-bold text-sm text-ink flex items-center justify-center gap-2 transition-ui hover:-translate-y-0.5 cursor-pointer"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, var(--ultra-600) 0%, var(--ultra-400) 100%)",
+                    border: "1px solid color-mix(in srgb, var(--ultra-50) 65%, transparent)",
+                    boxShadow: "0 10px 25px color-mix(in srgb, var(--ultra-600) 55%, transparent)",
+                  }}
                 >
                   <FolderPlus className="w-4 h-4" />
                   <span>
@@ -1364,7 +1388,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ============================================================ */}
         {activeSection === "appearance" && (
           <div className="space-y-6 animate-pop-in">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 stagger">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Colour Palette & Custom Hex Picker */}
               <div
                 className="lg:col-span-7 rounded-[26px] p-5 sm:p-6 space-y-5"
@@ -1497,60 +1521,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 </div>
 
-                {/* Live proof that the whole console follows the colour */}
-                <div className="palette-switch rounded-2xl p-4 space-y-3 panel-flat">
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-ink">
-                      Generated theme ramp
-                    </label>
-                    <span className="chip chip-quiet !text-[9px]">live</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-mist/85">
-                    Every surface, border, glow and icon in this console is mixed
-                    from these seven shades — so the whole interface recolours,
-                    not just the background.
-                  </p>
-                  <div className="grid grid-cols-7 gap-1.5">
-                    {(
-                      [
-                        ["950", "var(--ultra-950)"],
-                        ["900", "var(--ultra-900)"],
-                        ["800", "var(--ultra-800)"],
-                        ["600", "var(--ultra-600)"],
-                        ["400", "var(--ultra-400)"],
-                        ["200", "var(--ultra-200)"],
-                        ["50", "var(--ultra-50)"],
-                      ] as const
-                    ).map(([name, colour]) => (
-                      <div key={name} className="space-y-1">
-                        <div
-                          className="h-12 rounded-xl border border-ink/25"
-                          style={{
-                            background: colour,
-                            boxShadow: "var(--glass-inset)",
-                          }}
-                        />
-                        <p className="text-center text-[9px] font-mono text-mist/75">
-                          {name}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <span className="btn btn-primary px-3 py-2 text-[11px] pointer-events-none">
-                      Primary button
-                    </span>
-                    <span className="btn btn-glass px-3 py-2 text-[11px] pointer-events-none">
-                      Glass button
-                    </span>
-                    <span className="btn btn-ghost px-3 py-2 text-[11px] pointer-events-none">
-                      Ghost button
-                    </span>
-                    <span className="chip">Chip</span>
-                    <span className="badge-count">7</span>
-                  </div>
-                </div>
-
                 {/* Platform Card Layout Style */}
                 <div className="space-y-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-mist">
@@ -1679,11 +1649,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       ============================================================ */}
       <nav
         aria-label="Mobile Admin Navigation"
-        className="panel lg:hidden fixed bottom-3 inset-x-3 z-50 !rounded-[22px] p-1.5 grid grid-cols-4 gap-1"
+        className="lg:hidden fixed bottom-3 inset-x-3 z-50 rounded-[24px] p-1.5 grid grid-cols-4 gap-1"
         style={{
-          backgroundImage:
-            "linear-gradient(155deg, color-mix(in srgb, var(--ultra-800) 92%, transparent) 0%, color-mix(in srgb, var(--ultra-950) 97%, transparent) 100%)",
-          boxShadow: "var(--shadow-deep), var(--glow-soft)",
+          background:
+            "linear-gradient(155deg, color-mix(in srgb, var(--ultra-800) 95%, transparent) 0%, color-mix(in srgb, var(--ultra-950) 98%, transparent) 100%)",
+          backdropFilter: "var(--glass-filter)",
+          border: "1.5px solid color-mix(in srgb, var(--ultra-50) 48%, transparent)",
+          boxShadow: "0 18px 40px color-mix(in srgb, var(--ultra-950) 95%, transparent)",
         }}
       >
         {[
@@ -1704,28 +1676,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               key={tab.id}
               type="button"
               onClick={() => setActiveSection(tab.id)}
-              className={`relative py-2.5 px-1 rounded-[16px] flex flex-col items-center justify-center gap-1 transition-ui cursor-pointer border ${
+              className={`relative py-2.5 px-1 rounded-2xl flex flex-col items-center justify-center gap-1 transition-ui cursor-pointer ${
                 active
-                  ? "text-ink border-ink/40"
-                  : "text-mist/85 border-transparent hover:text-ink"
+                  ? "bg-accent text-ink shadow-md"
+                  : "text-mist"
               }`}
-              style={
-                active
-                  ? {
-                      backgroundImage:
-                        "linear-gradient(140deg, color-mix(in srgb, var(--ultra-600) 88%, transparent), color-mix(in srgb, var(--ultra-400) 52%, transparent))",
-                      boxShadow:
-                        "0 10px 22px -10px color-mix(in srgb, var(--ultra-600) 92%, transparent)",
-                    }
-                  : undefined
-              }
             >
-              <Icon className={`w-4 h-4 ${active ? "drop-shadow" : ""}`} />
+              <Icon className="w-4 h-4" />
               <span className="text-[10px] font-display font-bold leading-none">
                 {tab.label}
               </span>
               {typeof tab.badge === "number" && tab.badge > 0 && (
-                <span className="absolute top-0.5 right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-ink text-abyss text-[9px] font-extrabold flex items-center justify-center shadow-[0_0_10px_var(--glow)]">
+                <span className="absolute top-1 right-3 w-4 h-4 rounded-full bg-white text-abyss text-[9px] font-extrabold flex items-center justify-center">
                   {tab.badge}
                 </span>
               )}
